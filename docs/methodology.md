@@ -197,8 +197,8 @@ rows, six intra-document.
 *The instrument count.* The evidence base gives ten in the heading of section 12, fourteen rows
 in its table, and twelve in the project brief; none was reconciled across drafts. The figure to
 use is neither the row count nor any of those: **eleven** instruments have the absence of a time
-axis established by term count, and **five** more by qualitative reading. Headline sentences use
-eleven, because that is the number a reviewer can re-run. All sixteen rows stay in the data, and
+axis established by term count, and **six** more by qualitative reading. Headline sentences use
+eleven, because that is the number a reviewer can re-run. All seventeen rows stay in the data, and
 `src/instruments_summary.py` writes the two numbers into a generated summary row at the foot of
 `data/instruments.csv` so they cannot drift from the rows they describe.
 

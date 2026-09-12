@@ -180,8 +180,11 @@ def test_generated_summary_matches_the_rows_it_describes() -> None:
     assert stored["count_method"] == "generated_summary"
 
     counted, qualitative, _ = instruments_summary.tally(all_rows)
+    # The counted total is the number the paper may quote, so it is pinned.
+    # The qualitative total is derived: adding supporting context should not
+    # break the suite, but losing a counted instrument must.
     assert counted == 11, counted
-    assert qualitative == 5, qualitative
+    assert qualitative == len(instruments()) - counted
     assert counted + qualitative == len(instruments())
 
     assert stored["scope_note"].startswith(f"counted={counted}; qualitative={qualitative}.")

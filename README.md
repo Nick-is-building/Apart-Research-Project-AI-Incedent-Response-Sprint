@@ -9,9 +9,9 @@ successful realisation of the blocked capability by any mechanism. Notation is a
 (calendar time) or `P_exp` (agent exposure time), **never a bare `P`** — in the security and
 verification literature `P` regularly denotes a probability.
 
-What is in here: a 21-row control register (`data/clock.csv`) with a provenance and an evidence
+What is in here: a 22-row control register (`data/clock.csv`) with a provenance and an evidence
 status on every row; the arithmetic that turns it into three measured protection times, four
-budget calculations and a nesting argument for `P_exp`; a 16-instrument gap table; a 9-row
+budget calculations and a nesting argument for `P_exp`; a 17-instrument gap table; a 9-row
 contradiction register; and the full evidence base every value is drawn from.
 
 ## Reproduce
@@ -90,7 +90,7 @@ this repository as needing separate verification, and `docs/limitations.md` says
 - **[`docs/limitations.md`](docs/limitations.md)** — written for a hostile reviewer. `P_exp` has
   no primary evidence for magnitude; n = 1; type-C rows carry no `P`; over 7% of the underlying
   transcripts contain deliberately spoofed tool calls per independent review; one state value is
-  not source-determinable; five instruments rest on qualitative reading; the awareness clock
+  not source-determinable; six instruments rest on qualitative reading; the awareness clock
   measures to public disclosure, not to regulatory filing. It also states what would change the
   result.
 - **[`docs/methodology.md`](docs/methodology.md)** — the scoping rule, row types, timestamp
