@@ -119,6 +119,15 @@ BUDGET, CADENCE AND AWARENESS ARITHMETIC
 
   The 18/19 July reading is carried as a RANGE because the source gives one.
 
+  WHAT 'BREACHED' MEANS IN THIS TABLE - READ BEFORE THE NUMBERS
+
+      'days' is the interval from the awareness reading to PUBLIC DISCLOSURE.
+      That is a DIFFERENT QUANTITY from the regulatory obligation, which is
+      discharged by reporting to a regulator, not by publishing. A non-public
+      report to the Commission or to Cal OES could have been timely on any of
+      these readings. Public disclosure is simply the only date the record
+      supplies, so it is the only interval that can be computed.
+
   awareness reading                              days  EU (5 d)          CA (15 d)        evidence  status
   -----------------------------------------------------------------------------------------------------------
   20 Jul - the two incidents are linked             1  met               met              P1, P2    PRIMARY
@@ -138,12 +147,10 @@ BUDGET, CADENCE AND AWARENESS ARITHMETIC
   jurisdictions. This repository does not pick one, and no figure above should
   be quoted as the days-to-disclosure without the reading it belongs to.
 
-  Two things this table is not. It is not a compliance determination: whether
-  a report was in fact filed with the Commission or with Cal OES is not public,
-  and CeSIA has asked the Commission publicly to say whether and when a report
-  under Article 55(1)(c) was made. And 'BREACHED' here means the interval to
-  PUBLIC DISCLOSURE exceeded the deadline, which is the only date the record
-  supplies; a non-public report to a regulator could have been timely.
+  This table is not a compliance determination. Whether a report was in fact
+  filed with the Commission or with Cal OES is not public, and CeSIA has asked
+  the Commission publicly to say whether and when a report under Article
+  55(1)(c) was made.
 
   Note on W-2: what was an internal inconsistency in the record becomes, under
   this table, the determinant of a legal question. Evidence base 16.2.

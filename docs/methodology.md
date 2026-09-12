@@ -159,13 +159,55 @@ Every row carries a status. The legend is evidence base 0.1; the values are carr
 | `UNVERIFIED` | UNGEPRÜFT | Claim stands, not verified |
 | `REFUTED` | WIDERLEGT | Checked and shown to be false |
 
-## 7. Reproducing
+## 7. The other registers
+
+`data/sources.csv` is the single place a source code resolves to a URL and a date. Every code
+cited in `clock.csv`, `contradictions.csv` and `instruments.csv` must appear there, and
+`tests/test_registers.py` fails if one does not.
+
+`data/instruments.csv` turns the gap table of evidence base section 12 and the
+containment-verification cluster of section 11.7 into data. The count columns are blank where
+the evidence base gives no count for that term in that instrument — **a blank is not a zero**.
+`count_method` records how each row was established, with five permitted values:
+
+| Value | Meaning |
+|---|---|
+| `full_text_term_count` | The evidence base states a count over the full text |
+| `full_text_term_count_aggregated_over_cluster` | Counted across the three cluster papers jointly, not per paper |
+| `partial_read_full_term_search` | Partially read, exhaustively term-searched |
+| `term_search_only` | Term scan only, no reading |
+| `qualitative_no_term_count` | The gap is stated qualitatively; no count exists |
+
+`n_time_axis_present` is FALSE in every row, and a test enforces it. If any instrument ever
+gains a time axis for containment, the suite fails and the novelty claim has to be rewritten
+rather than quietly carried forward.
+
+`data/contradictions.csv` holds W-1 to W-9 from evidence base section 7. Four rows —
+W-1, W-2, W-8, W-9 — are flagged `in_paper_main_text`; the rest go to an appendix.
+
+## 8. Reproducing
 
 ```
-python3 src/compute_p.py          # writes output/clock_computed.csv
-python3 -m pytest tests/ -q       # checks the three target values and the type-C rule
+./verify.sh            # everything: pipeline, reference values, tests, outputs
+./verify.sh --fast     # the same, without rendering figures
+```
+
+`verify.sh` exits non-zero if any of the three reference values fails to reproduce, if any
+test fails, or if any expected output is missing. Individual stages:
+
+```
+python3 src/compute_p.py      # -> output/clock_computed.csv
+python3 src/sensitivity.py    # -> output/sensitivity_report.txt
+python3 src/budgets.py        # -> output/budgets_report.txt
+python3 src/figures.py        # -> output/figure_1..4 .png and .pdf
+python3 src/paper_tables.py   # -> output/paper_tables.md
+python3 -m pytest tests/ -q
 ```
 
 The three target values from evidence base 4.3 — 46 h 50 min, 62 h 45 min, 175 h 30 min — are
 never typed into the data. They are computed from `applied_utc` and `reconstituted_utc`, and
-the tests fail if the arithmetic moves.
+both the tests and `verify.sh` fail if the arithmetic moves by as little as one minute.
+
+`output/paper_tables.md` is generated, never edited. It carries the load-bearing caveats with
+the tables they belong to, and a test checks that they are still there — a table pasted into a
+paper must not shed its qualifications on the way.
