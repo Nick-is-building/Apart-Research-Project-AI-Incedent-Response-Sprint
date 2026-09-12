@@ -98,8 +98,6 @@ def reason_not_computed(row: dict[str, str]) -> str | None:
         return "reconstituted_utc is NEVER: the blocked capability was never realised"
     if reconstituted_raw == NOT_DATED:
         return "reconstituted_utc is NOT_DATED: no dated reconstitution in the sources"
-    if applied_raw == NOT_DATED:
-        return "applied_utc is NOT_DATED: no dated application in the sources"
     if parse_utc(applied_raw) is None:
         return f"applied_utc is not a valid ISO-8601 timestamp: {applied_raw!r}"
     if parse_utc(reconstituted_raw) is None:
@@ -117,12 +115,32 @@ def append_note(existing: str, addition: str) -> str:
     return f"{existing}{separator}{addition}"
 
 
+def validate_applied_utc(rows: list[dict[str, str]]) -> None:
+    """applied_utc is an ISO-8601 UTC timestamp or PRE_EXISTING. Nothing else.
+
+    The corpus contains exactly one control-application event, the Artifactory
+    rebuild of 2026-07-06T01:16Z.  Every other control in the corpus was already
+    standing.  There is no third case, so there is no NOT_DATED sentinel here:
+    a control either has a dated application or it is pre-existing.
+    """
+    for row in rows:
+        value = (row["applied_utc"] or "").strip()
+        if value == PRE_EXISTING:
+            continue
+        if parse_utc(value) is None:
+            raise ValueError(
+                f"row {row['id']}: applied_utc must be ISO-8601 UTC or PRE_EXISTING, got {value!r}"
+            )
+
+
 def load_rows(path: Path = CLOCK_CSV) -> tuple[list[str], list[dict[str, str]]]:
     with path.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames is None:
             raise ValueError(f"{path} has no header row")
-        return list(reader.fieldnames), list(reader)
+        fieldnames, rows = list(reader.fieldnames), list(reader)
+    validate_applied_utc(rows)
+    return fieldnames, rows
 
 
 def compute(rows: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -181,6 +199,10 @@ def summarise(rows: list[dict[str, str]]) -> str:
     for row_type in order:
         group = [r for r in rows if r["row_type"] == row_type]
         if not group:
+            lines.append(titles[row_type])
+            lines.append("-" * 72)
+            lines.append("  (no rows: the schema keeps this type defined, the corpus contains none)")
+            lines.append("")
             continue
         lines.append(titles[row_type])
         lines.append("-" * 72)
@@ -209,6 +231,9 @@ def summarise(rows: list[dict[str, str]]) -> str:
         f"Type C rows: {len(standing)}, of which with a P_wall value: "
         f"{sum(1 for r in standing if r['p_wall_hours'])} (must be 0)"
     )
+    lines.append("")
+    lines.append("The corpus contains exactly one control-application event: the Artifactory rebuild")
+    lines.append("of 2026-07-06T01:16Z. Every other control in the corpus was already standing.")
     lines.append("")
     lines.append("P_wall is calendar time. P_exp (agent exposure time) is not computed here:")
     lines.append("no public data exists on when evaluation workloads ran. See src/sensitivity.py.")

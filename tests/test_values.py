@@ -30,7 +30,8 @@ VALID_CATEGORIES = {
     "K3_residue",
     "K4_escalation",
     "K5_ephemeral",
-    "none",
+    "unclassified",  # reconstitution happened, the sources do not say how
+    "none",  # no reconstitution occurred
 }
 VALID_STATUSES = {
     "PRIMARY",
@@ -91,6 +92,25 @@ def test_every_type_c_row_is_pre_existing(rows: list[dict[str, str]]) -> None:
     for row in rows:
         if row["row_type"] == "C_standing":
             assert row["applied_utc"] == "PRE_EXISTING", row["id"]
+
+
+def test_all_type_a_rows_are_bypassed(rows: list[dict[str, str]]) -> None:
+    """state describes the control applied at t0, not the surrounding system.
+
+    None of the three type-A controls was itself overcome: each capability came
+    back by a route the t0 measure did not block.
+    """
+    type_a = [r for r in rows if r["row_type"] == "A_applied_nested"]
+    assert {r["state"] for r in type_a} == {"bypassed"}
+
+
+def test_unclassified_is_only_used_where_reconstitution_happened(rows: list[dict[str, str]]) -> None:
+    """'unclassified' means the how is unknown; 'none' means it did not happen."""
+    for row in rows:
+        if row["reconstitution_category"] == "unclassified":
+            assert row["reconstituted_utc"] != "NEVER", row["id"]
+        if row["reconstitution_category"] == "none":
+            assert row["reconstituted_utc"] in {"NEVER", "NOT_DATED"}, row["id"]
 
 
 # --- provenance and status discipline --------------------------------------
@@ -154,10 +174,25 @@ def test_type_a_rows_are_nested(rows: list[dict[str, str]]) -> None:
     assert ends[0] < ends[1] < ends[2]
 
 
-def test_type_b_breaks_the_nesting(by_id: dict[str, dict[str, str]]) -> None:
-    """Type B rows do not share the type-A start, which is why they are kept apart."""
-    for row_id in ("B1", "B2"):
-        assert by_id[row_id]["applied_utc"] != "2026-07-06T01:16Z"
+def test_type_b_is_defined_but_empty(rows: list[dict[str, str]]) -> None:
+    """The corpus contains no applied, non-nested control.
+
+    The type stays in the schema because the distinction is real; it is empty
+    because every control in the corpus other than the 6 July rebuild was
+    already standing.
+    """
+    assert [r["id"] for r in rows if r["row_type"] == "B_applied_nonnested"] == []
+
+
+def test_exactly_one_control_application_event(rows: list[dict[str, str]]) -> None:
+    """Every row is either the 6 July rebuild or a pre-existing control."""
+    applied = {r["applied_utc"] for r in rows}
+    assert applied == {"2026-07-06T01:16Z", "PRE_EXISTING"}, applied
+
+
+def test_applied_utc_has_no_not_dated_sentinel(rows: list[dict[str, str]]) -> None:
+    for row in rows:
+        assert row["applied_utc"] != "NOT_DATED", row["id"]
 
 
 # --- held evidence must sit inside the interval ----------------------------
