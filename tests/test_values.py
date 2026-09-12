@@ -207,3 +207,53 @@ def test_held_evidence_lies_within_the_interval(rows: list[dict[str, str]]) -> N
         assert applied <= held, f"{row['id']}: held evidence precedes application"
         if reconstituted is not None:
             assert held <= reconstituted, f"{row['id']}: held evidence follows reconstitution"
+
+
+# --- the nesting argument in src/sensitivity.py ----------------------------
+
+def test_sensitivity_loads_exactly_three_type_a_rows() -> None:
+    import sensitivity
+
+    assert len(sensitivity.load_type_a()) == 3
+
+
+def test_sensitivity_verifies_nesting() -> None:
+    import sensitivity
+
+    nested, _ = sensitivity.verify_nesting(sensitivity.load_type_a())
+    assert nested
+
+
+def test_monte_carlo_ordering_holds_in_every_draw() -> None:
+    """The proof says 100%. A smaller run, so the suite stays fast."""
+    import sensitivity
+
+    rows = sensitivity.load_type_a()
+    _, violations, _, _ = sensitivity.monte_carlo(rows, draws=1_200, grid_points=1_500)
+    assert violations == 0
+
+
+def test_cumulative_exposure_is_monotone_for_every_family() -> None:
+    """Monotone by construction: this is what makes the 100% exact, not lucky."""
+    import numpy as np
+
+    import sensitivity
+
+    rng = np.random.default_rng(7)
+    rows = sensitivity.load_type_a()
+    grid = sensitivity.build_grid([r.p_wall_hours for r in rows], 1_500)
+    for family in sensitivity.DUTY_CYCLE_FAMILIES:
+        for _ in range(25):
+            duty = sensitivity.draw_duty_cycle(family, grid, rng)
+            assert (duty >= 0).all(), family
+            cumulative = sensitivity.cumulative_exposure(grid, duty)
+            assert np.all(np.diff(cumulative) >= 0), family
+
+
+def test_alpha_reversal_threshold_matches_the_evidence_base() -> None:
+    """Evidence base 18.1, limitation 3: reversal at alpha_A3 < 0.2669 * alpha_A1."""
+    import sensitivity
+
+    rows = sensitivity.load_type_a()
+    threshold = rows[0].p_wall_hours / rows[2].p_wall_hours
+    assert round(threshold, 4) == 0.2669
