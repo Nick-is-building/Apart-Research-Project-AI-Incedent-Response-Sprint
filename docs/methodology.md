@@ -49,9 +49,15 @@ control in the corpus was already standing when the incident began.
 
 `B_applied_nonnested` stays in the schema because the distinction is real — a control applied
 at a different moment would break the nesting the sensitivity argument rests on — but no row
-occupies it. `B1` and `B2` were originally classified this way and were reclassified to
-`C_standing`: 9 July is when the *event* occurred, not when the control was applied. Both
-were standing controls. Their ids are kept for traceability against earlier drafts.
+occupies it.
+
+**Reclassification, recorded as method history.** Two rows were first drafted as applied,
+non-nested controls dated 9 July: the OpenAI outbound network controls, and the integrity of
+the Artifactory container image cache. That reading was wrong. 9 July is when the *event*
+occurred, not when the control was applied; both controls were already standing when the
+incident began. They are now `C_standing` with `applied_utc = PRE_EXISTING`, and were
+renumbered from `B1`/`B2` to **`C15`** and **`C16`** so that no id contradicts its row type.
+The same correction applies to `X1` and `X2`, which are also standing controls.
 
 The hardening measures from 20 July onward were genuine applied controls — hard-fail rollout
 of ExploitGym, CaaS egress heavily reduced, CaaS-to-WebCache private links deleted,
@@ -93,7 +99,23 @@ Where a row's state or category is derived rather than quoted, the derivation is
   That yields `bypassed` + `K1_alternative`. `alternative_mechanism` is left **empty**: the
   route is not stated and is not guessed at.
 - **C8** — the capability was realised on the second host-mount pod, but P1 does not say how
-  the two attempts differed, so the category is `unclassified`.
+  the two attempts differed, so the category is `unclassified` and the state is flagged as not
+  source-determinable. See below.
+
+### `state_determinable`
+
+Every row carries a boolean `state_determinable`. It is `TRUE` everywhere except **C8**, which
+is the only state value in the corpus that cannot be settled from the evidence.
+
+P1 records that the first privileged host-mount pod failed and that a second succeeded minutes
+later. It does not describe how the two attempts differed. The distinction between a control
+that was *defeated* and one that was *circumvented* therefore cannot be made from the source:
+`broken` is recorded, but it is as much a claim as `bypassed` would be.
+
+The reasoning that settled A3 does not transfer. There, the alternative route is named in the
+source — the JRuby chain is visibly not the reader-to-admin path — so the state follows from
+the evidence. Here nothing is named. One column, one row, and it is worth being able to point
+at.
 
 ## 5. State and category are different axes
 

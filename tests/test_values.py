@@ -174,6 +174,20 @@ def test_type_a_rows_are_nested(rows: list[dict[str, str]]) -> None:
     assert ends[0] < ends[1] < ends[2]
 
 
+def test_no_id_contradicts_its_row_type(rows: list[dict[str, str]]) -> None:
+    """A cold reader must not meet id B1 sitting under row_type C_standing."""
+    prefix_for = {
+        "A_applied_nested": "A",
+        "B_applied_nonnested": "B",
+        "C_standing": "C",
+        "X_out_of_corpus": "X",
+    }
+    for row in rows:
+        assert row["id"].startswith(prefix_for[row["row_type"]]), (
+            f"{row['id']} has row_type {row['row_type']}"
+        )
+
+
 def test_type_b_is_defined_but_empty(rows: list[dict[str, str]]) -> None:
     """The corpus contains no applied, non-nested control.
 
@@ -257,3 +271,27 @@ def test_alpha_reversal_threshold_matches_the_evidence_base() -> None:
     rows = sensitivity.load_type_a()
     threshold = rows[0].p_wall_hours / rows[2].p_wall_hours
     assert round(threshold, 4) == 0.2669
+
+
+# --- state_determinable ------------------------------------------------------
+
+def test_state_determinable_is_boolean(rows: list[dict[str, str]]) -> None:
+    for row in rows:
+        assert row["state_determinable"] in {"TRUE", "FALSE"}, row["id"]
+
+
+def test_exactly_one_state_is_not_source_determinable(rows: list[dict[str, str]]) -> None:
+    """C8 is the only row whose state cannot be settled from the evidence.
+
+    P1 records that the first host-mount pod failed and a second succeeded
+    minutes later, without describing how they differed. 'broken' is recorded,
+    but it is a claim, not a reading of the source.
+    """
+    undeterminable = [r["id"] for r in rows if r["state_determinable"] == "FALSE"]
+    assert undeterminable == ["C8"], undeterminable
+
+
+def test_undeterminable_states_say_so_in_notes(rows: list[dict[str, str]]) -> None:
+    for row in rows:
+        if row["state_determinable"] == "FALSE":
+            assert "cannot be made from the source" in row["notes"], row["id"]
