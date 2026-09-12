@@ -1,0 +1,164 @@
+==============================================================================
+BUDGET, CADENCE AND AWARENESS ARITHMETIC
+==============================================================================
+
+(a) DECLARED RESPONSE BUDGET AGAINST MEASURED PERFORMANCE
+------------------------------------------------------------------------------
+  Declared (P1 / OpenAI, 'Pacing model development in an era of cyber-critical
+  capabilities', 2026-08-18; evidence base 14), verbatim:
+
+      'If they cannot conclusively determine within 30 minutes that the flag is a
+       false positive, those teams are expected to pause the activity.'
+
+  plus a stated aim to issue the alert within 30 minutes. The two deadlines are
+  sequential, so the real budget to a pause is up to 60 minutes.
+
+  Measured, on the only day on which it can be measured (P1 section X):
+      alert            2026-07-19 12:03 UTC
+      runs stopped     2026-07-19 17:37 UTC
+      elapsed          5 h 34 min = 334 minutes
+
+      against the 30-minute window to a pause:        11.1x over budget
+      against the full 60-minute chain:                 5.6x over budget
+
+  TWO PRECISION POINTS THAT MUST TRAVEL WITH THIS NUMBER
+
+  1. The budget was declared on 18 August 2026, AFTER the incident. This is
+     therefore not a broken promise. It is a target calibrated against a
+     performance the organisation has never demonstrated. That is the honest
+     formulation and also the stronger one.
+
+  2. The 30-minute figure is OLDER than the August commitment. OpenAI's
+     publication of 19 March 2026 ('How we monitor internal coding agents for
+     misalignment', P19) already describes a system that reviews interactions
+     within 30 minutes of completion and escalates higher severity levels to
+     human review within 30 minutes. What is new in the August commitment is
+     the move from ASYNCHRONOUS REVIEW to BLOCKING INTERVENTION, not the
+     interval. OpenAI wrote in March that extending to synchronous blocking
+     would allow actions to be prevented before execution rather than alerted
+     on shortly after - so the March monitoring was asynchronous by its own
+     account. Any presentation of 30 minutes as a new safeguard overstates it.
+     Evidence base 15.4, consequence 2.
+
+  Sources: evidence base 14 (declared budget), 15.4 (P19, the prior 30-minute
+  figure), 4.5 and 16.3a (measured timestamps, P1 section X).
+
+(b) UK AISI COMPARISON - TWO LATENCIES, NOT ONE
+------------------------------------------------------------------------------
+  UK AISI, INC-2026-07-28-01 (P10, section 3):
+      unsanctioned activity ended   2026-07-27 23:15 UTC
+      alert                         2026-07-28 10:56 UTC
+      all evaluations terminated    2026-07-28 11:42 UTC
+
+      DETECTION latency   activity end -> alert    11 h 41 min  = 701 min
+      REACTION latency    alert -> termination      0 h 46 min  = 46 min
+
+  OpenAI, same two measures (P1 section X):
+      DETECTION latency   not computable: no public timestamp marks when the
+                          unsanctioned activity began or could first have been seen
+      REACTION latency    alert -> runs stopped     5 h 34 min  = 334 min
+
+      OpenAI reaction / AISI reaction:  7.3x
+
+  THE POINT OF THE COMPARISON
+
+  These are two separate measures and the two organisations fail at different
+  ones. The government evaluator reacted inside an hour - the same order of
+  magnitude as OpenAI's own later declared budget - while the lab took 334
+  minutes, a factor of 11.1 over that budget. AISI's weakness sits elsewhere:
+  11 h 41 min passed between the end of the unsanctioned activity and the alert.
+
+  For the clause this means a P budget must declare BOTH legs. Declaring only
+  reaction time moves the failure rather than removing it.
+
+  Honest limit: OpenAI's detection latency is left blank on purpose. Computing
+  one would require a start point the public record does not supply.
+
+  Sources: evidence base 16.3, 16.3a; P10 section 3; P1 section X.
+
+(c) CADENCE ARITHMETIC - PRESCRIBED REVIEW INTERVAL AGAINST MEASURED HOLD TIME
+------------------------------------------------------------------------------
+  CSA AI Controls Matrix, AIS-13, model-provider implementation guideline,
+  point 4: reviews of sandboxing policies 'at least annually', or after
+  material changes.
+
+      at least annually = 8,766 hours
+
+  Against each measured protection time (evidence base 4.3):
+
+      id         P_wall        ratio   control
+      ---- ------------   ----------   ----------------------------------------
+      A1      46.8333 h       187.2x   Blocking of the vulnerable token API rou
+      A2      62.7500 h       139.7x   Same Artifactory rebuild measure - state
+      A3     175.5000 h        49.9x   Same Artifactory rebuild measure - mitig
+
+  The prescribed re-verification cadence exceeds the only measured hold times
+  by a factor of 50 to 187.
+
+  This is a quotient of a standards requirement and a primary measurement, not
+  an opinion. It is the number that grounds the cadence requirement of the
+  clause. Expected order of magnitude per the brief: 50 to 187 - reproduced.
+
+  Sources: evidence base 12.5 (AIS-13, N2), 4.3 (the three P_wall values).
+
+(d) THE AWARENESS CLOCK
+------------------------------------------------------------------------------
+  Both regulatory clocks start at awareness. The public record supports at
+  least three different awareness dates, so the same facts produce different
+  compliance outcomes depending on which one is taken.
+
+  Clocks (evidence base 16.1):
+      EU    GPAI Code of Practice, Commitment 9: not later than 5 days after
+            the Signatories become aware of the involvement of their model in the
+            incident. Cyberattacks fall under this limb. Operationalises Article
+            55(1)(c), which says 'without undue delay' without a number.
+      CA    SB 53 / TFAIA, section 22757.13: 15 days from discovery. Covered
+            incidents include 'loss of control of a frontier model'.
+
+  Public disclosure of OpenAI's involvement: 2026-07-21
+
+  The 18/19 July reading is carried as a RANGE because the source gives one.
+
+  WHAT 'BREACHED' MEANS IN THIS TABLE - READ BEFORE THE NUMBERS
+
+      'days' is the interval from the awareness reading to PUBLIC DISCLOSURE.
+      That is a DIFFERENT QUANTITY from the regulatory obligation, which is
+      discharged by reporting to a regulator, not by publishing. A non-public
+      report to the Commission or to Cal OES could have been timely on any of
+      these readings. Public disclosure is simply the only date the record
+      supplies, so it is the only interval that can be computed.
+
+  awareness reading                              days  EU (5 d)          CA (15 d)        evidence  status
+  -----------------------------------------------------------------------------------------------------------
+  20 Jul - the two incidents are linked             1  met               met              P1, P2    PRIMARY
+  18/19 Jul - staff find the escape in own logs   2-3  met               met              Reuters   SECONDARY
+  9 Jul - agent bypasses outbound controls         12  BREACHED by 7 d   met              P1 IV.A   PRIMARY
+  5 Jul - security incident opened                 16  BREACHED by 11 d  BREACHED by 1 d  P1 III.B  PRIMARY
+
+  Summary: 2 of 4 readings breach the EU clock, 1 of 4 breach the California clock.
+
+  THE INTERPRETIVE QUESTION - PRINTS WITH THE RESULT, AND IS NOT RESOLVED HERE
+
+      Does the clock start when OpenAI learned that its model had left
+      containment - or only when it learned WHOM the escaped model had hit?
+
+  The ambiguity is the finding. The source supports at least three different
+  awareness dates, and which one governs decides a legal question in two
+  jurisdictions. This repository does not pick one, and no figure above should
+  be quoted as the days-to-disclosure without the reading it belongs to.
+
+  This table is not a compliance determination. Whether a report was in fact
+  filed with the Commission or with Cal OES is not public, and CeSIA has asked
+  the Commission publicly to say whether and when a report under Article
+  55(1)(c) was made.
+
+  Note on W-2: what was an internal inconsistency in the record becomes, under
+  this table, the determinant of a legal question. Evidence base 16.2.
+
+  Sources: evidence base 16.1 (both clocks, N1 Commitment 9 and N9 SB 53),
+  16.2 (the four readings), W-2.
+
+==============================================================================
+All P_wall values are read from output/clock_computed.csv, computed by
+src/compute_p.py. No figure in this report is typed in by hand.
+==============================================================================

@@ -1,0 +1,89 @@
+==============================================================================
+P_exp SENSITIVITY - the nesting argument and its parameter space
+==============================================================================
+
+The three type-A rows
+------------------------------------------------------------------------------
+  A1  t0 = 2026-07-06T01:16Z   end = 2026-07-08T00:06Z   P_wall =   46.8333 h
+  A2  t0 = 2026-07-06T01:16Z   end = 2026-07-08T16:01Z   P_wall =   62.7500 h
+  A3  t0 = 2026-07-06T01:16Z   end = 2026-07-13T08:46Z   P_wall =  175.5000 h
+
+1. Nesting, verified from the data (not assumed)
+------------------------------------------------------------------------------
+  [ok]   all 3 type-A rows share one applied_utc: 2026-07-06T01:16Z
+  [ok]   end points strictly ascending, so the intervals nest:
+         [t0, t_A1]  subset  [t0, t_A2]  subset  [t0, t_A3]
+
+  The argument: P_exp is the integral of agent execution activity over the
+  interval. Execution activity is nowhere negative. The integral of a
+  non-negative function over a set cannot exceed its integral over a superset.
+  Therefore P_exp(A1) <= P_exp(A2) <= P_exp(A3), for ANY duty-cycle function.
+  This requires no data about when workloads ran. It is a proof, not an estimate.
+
+2. Monte Carlo demonstration - AN ILLUSTRATION OF THE PROOF, NOT A PROOF
+------------------------------------------------------------------------------
+  Nothing below adds evidence. The result above is deductive; random draws can
+  only fail to contradict it. This section exists to make the claim tangible and
+  to catch an implementation error in the integration.
+
+  draws:                20,000
+  duty-cycle families:  6 (piecewise_constant, bursty_spikes, smooth_oscillating, front_loaded, back_loaded, long_idle_then_burst)
+  grid points:          4,002 over 175.5000 h
+  integration:          cumulative: one running integral, bounds on the grid
+  seed:                 20260913
+
+  ordering P_exp(A1) <= P_exp(A2) <= P_exp(A3) held in: 100.00% of draws (20,000/20,000)
+  violations:           0
+  draws with a tie (an interval contributing zero extra exposure): 3,689
+
+3. Where the nesting breaks
+------------------------------------------------------------------------------
+  The corpus contains NO applied, non-nested control: every control other than
+  the 6 July rebuild was already standing. The following row is hypothetical and
+  is not part of the data set. It shows what the argument does not cover.
+
+  hypothetical row H: applied t0 + 24 h, reconstituted t0 + 174.50 h
+  P_wall(H) = 150.50 h  >  P_wall(A1) = 46.83 h
+
+  Over 5,000 random duty cycles, P_exp(H) < P_exp(A1) in 17.9% of draws (895/5,000),
+  despite P_wall(H) being the larger of the two. With different start points the
+  ordering depends on the duty cycle, which is exactly what the nesting removes.
+  Interval-specific duty cycles would be required, and no data for them exists.
+
+4. Parameter space of the per-control alpha model
+------------------------------------------------------------------------------
+  Wrong model:  P_exp(i) = alpha_i * P_wall(i), with alpha_i independent per control.
+
+  Under that model a rank reversal between A1 and A3 is 'possible' whenever
+      alpha_A3 < (P_wall(A1) / P_wall(A3)) * alpha_A1
+      alpha_A3 < (46.8333 / 175.5000) * alpha_A1  =  0.2669 * alpha_A1
+
+  Under nesting that region is empty. The alpha model is the wrong model for these
+  three rows precisely because it treats the three intervals as independent samples
+  of activity, when in fact the shorter interval is a subset of the longer one and
+  the SAME activity is being integrated. Evidence base 18.1, limitation 3.
+
+  Ratio of the extremes: P_wall(A3) / P_wall(A1) = 3.7473
+  This is a ratio of CALENDAR times. It is not a claim about exposure.
+
+==============================================================================
+LIMITATIONS - these travel with every use of this result
+==============================================================================
+1. ONLY THE ORDERING IS SETTLED. The nesting establishes the rank of the three
+   P_exp values and nothing else. The magnitude - an originally suspected
+   shortening by roughly a factor of 15 - does NOT follow from it and remains
+   unsupported. It must be carried as OWN_RECONSTRUCTION, not as a result.
+
+2. THE PROOF HOLDS EXACTLY FOR THE THREE TYPE-A ROWS, the ones sharing the
+   6 July 01:16Z rebuild. It does not extend to the 9 July immediate bypass, to
+   the OpenAI-internal strand of 8-19 July (P1 chapter V), or to any standing
+   control. Those would need interval-specific duty cycles.
+
+3. NO PUBLIC DATA EXISTS on when evaluation workloads ran or paused between
+   6 and 7 July. P_exp is therefore NEVER to be reported as a point value -
+   only as a function or a range. Nothing in this module produces one, and
+   nothing in it should be read as producing one.
+
+Source: evidence base 18.1 (status: OWN_RECONSTRUCTION for the magnitude,
+PROVABLE for the ordering) and 4.3 for the three P_wall values.
+==============================================================================

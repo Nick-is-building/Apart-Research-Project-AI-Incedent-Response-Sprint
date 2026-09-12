@@ -49,9 +49,15 @@ control in the corpus was already standing when the incident began.
 
 `B_applied_nonnested` stays in the schema because the distinction is real — a control applied
 at a different moment would break the nesting the sensitivity argument rests on — but no row
-occupies it. `B1` and `B2` were originally classified this way and were reclassified to
-`C_standing`: 9 July is when the *event* occurred, not when the control was applied. Both
-were standing controls. Their ids are kept for traceability against earlier drafts.
+occupies it.
+
+**Reclassification, recorded as method history.** Two rows were first drafted as applied,
+non-nested controls dated 9 July: the OpenAI outbound network controls, and the integrity of
+the Artifactory container image cache. That reading was wrong. 9 July is when the *event*
+occurred, not when the control was applied; both controls were already standing when the
+incident began. They are now `C_standing` with `applied_utc = PRE_EXISTING`, and were
+renumbered from `B1`/`B2` to **`C15`** and **`C16`** so that no id contradicts its row type.
+The same correction applies to `X1` and `X2`, which are also standing controls.
 
 The hardening measures from 20 July onward were genuine applied controls — hard-fail rollout
 of ExploitGym, CaaS egress heavily reduced, CaaS-to-WebCache private links deleted,
@@ -93,7 +99,23 @@ Where a row's state or category is derived rather than quoted, the derivation is
   That yields `bypassed` + `K1_alternative`. `alternative_mechanism` is left **empty**: the
   route is not stated and is not guessed at.
 - **C8** — the capability was realised on the second host-mount pod, but P1 does not say how
-  the two attempts differed, so the category is `unclassified`.
+  the two attempts differed, so the category is `unclassified` and the state is flagged as not
+  source-determinable. See below.
+
+### `state_determinable`
+
+Every row carries a boolean `state_determinable`. It is `TRUE` everywhere except **C8**, which
+is the only state value in the corpus that cannot be settled from the evidence.
+
+P1 records that the first privileged host-mount pod failed and that a second succeeded minutes
+later. It does not describe how the two attempts differed. The distinction between a control
+that was *defeated* and one that was *circumvented* therefore cannot be made from the source:
+`broken` is recorded, but it is as much a claim as `bypassed` would be.
+
+The reasoning that settled A3 does not transfer. There, the alternative route is named in the
+source — the JRuby chain is visibly not the reader-to-admin path — so the state follows from
+the evidence. Here nothing is named. One column, one row, and it is worth being able to point
+at.
 
 ## 5. State and category are different axes
 
@@ -137,13 +159,55 @@ Every row carries a status. The legend is evidence base 0.1; the values are carr
 | `UNVERIFIED` | UNGEPRÜFT | Claim stands, not verified |
 | `REFUTED` | WIDERLEGT | Checked and shown to be false |
 
-## 7. Reproducing
+## 7. The other registers
+
+`data/sources.csv` is the single place a source code resolves to a URL and a date. Every code
+cited in `clock.csv`, `contradictions.csv` and `instruments.csv` must appear there, and
+`tests/test_registers.py` fails if one does not.
+
+`data/instruments.csv` turns the gap table of evidence base section 12 and the
+containment-verification cluster of section 11.7 into data. The count columns are blank where
+the evidence base gives no count for that term in that instrument — **a blank is not a zero**.
+`count_method` records how each row was established, with five permitted values:
+
+| Value | Meaning |
+|---|---|
+| `full_text_term_count` | The evidence base states a count over the full text |
+| `full_text_term_count_aggregated_over_cluster` | Counted across the three cluster papers jointly, not per paper |
+| `partial_read_full_term_search` | Partially read, exhaustively term-searched |
+| `term_search_only` | Term scan only, no reading |
+| `qualitative_no_term_count` | The gap is stated qualitatively; no count exists |
+
+`n_time_axis_present` is FALSE in every row, and a test enforces it. If any instrument ever
+gains a time axis for containment, the suite fails and the novelty claim has to be rewritten
+rather than quietly carried forward.
+
+`data/contradictions.csv` holds W-1 to W-9 from evidence base section 7. Four rows —
+W-1, W-2, W-8, W-9 — are flagged `in_paper_main_text`; the rest go to an appendix.
+
+## 8. Reproducing
 
 ```
-python3 src/compute_p.py          # writes output/clock_computed.csv
-python3 -m pytest tests/ -q       # checks the three target values and the type-C rule
+./verify.sh            # everything: pipeline, reference values, tests, outputs
+./verify.sh --fast     # the same, without rendering figures
+```
+
+`verify.sh` exits non-zero if any of the three reference values fails to reproduce, if any
+test fails, or if any expected output is missing. Individual stages:
+
+```
+python3 src/compute_p.py      # -> output/clock_computed.csv
+python3 src/sensitivity.py    # -> output/sensitivity_report.txt
+python3 src/budgets.py        # -> output/budgets_report.txt
+python3 src/figures.py        # -> output/figure_1..4 .png and .pdf
+python3 src/paper_tables.py   # -> output/paper_tables.md
+python3 -m pytest tests/ -q
 ```
 
 The three target values from evidence base 4.3 — 46 h 50 min, 62 h 45 min, 175 h 30 min — are
 never typed into the data. They are computed from `applied_utc` and `reconstituted_utc`, and
-the tests fail if the arithmetic moves.
+both the tests and `verify.sh` fail if the arithmetic moves by as little as one minute.
+
+`output/paper_tables.md` is generated, never edited. It carries the load-bearing caveats with
+the tables they belong to, and a test checks that they are still there — a table pasted into a
+paper must not shed its qualifications on the way.
