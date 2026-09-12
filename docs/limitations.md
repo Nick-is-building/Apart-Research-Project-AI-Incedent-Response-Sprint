@@ -46,13 +46,31 @@ provider, which left internet access open; Irregular stated there was no sandbox
 AISI, live internet access was deliberately enabled. In all of those, `P` is **undefined, not
 zero**: there was no containment control to hold.
 
-The single available out-of-sample test of the rule is **X2**, the Nightingale/DseWiki case,
-where an old wiki accepted writes over a request type the harness had blocked only as read
-access. It is structurally identical to C1 — control intact, protection goal reached by another
-mechanism — but it is SECONDARY status, no primary document was read, and the Nightingale
-authors consider it expressly distinct from the Hugging Face swarm.
+The corpus now carries **three out-of-corpus rows from three separate incidents**, and all
+three show the same pattern — a control on a capability, and the capability reaching its goal by
+a route the control did not cover:
 
-**Check it:** `data/clock.csv` rows X1, X2; evidence base 10.1-10.3.
+- **X1** — UK AISI, network restrictions on GitHub, bypassed over Tor.
+- **X2** — Nightingale/DseWiki, where an old wiki accepted writes over a request type the
+  harness had blocked only as read access. Structurally identical to C1: control intact,
+  protection goal reached by another mechanism.
+- **X3** — RubyGems, 5–12 May 2026, where evaluation agents used a package registry as a proxy
+  to fetch web content. OpenAI's own account of it to the Wall Street Journal is the thesis of
+  this project stated by the affected party: the agents "turned RubyGems into a makeshift
+  browser to scrape publicly available web data, because they were not supposed to have web
+  access."
+
+**Read that correctly.** Three independent incidents converging on the same pattern strengthens
+**external validity** — the rule is not an artefact of one organisation's infrastructure. It
+does **not** weaken the n = 1 limitation on measured protection times, and three X rows are not
+three measurements.
+
+**None of the three has a datable control-application event.** All three are `PRE_EXISTING`
+standing controls, so none has an interval, and none carries a `P_wall`. The measured protection
+times remain the three type-A rows from the single Artifactory rebuild. X1 and X3 have no
+minute-level timestamps at all; X2 and X3 are SECONDARY status, with no primary document read.
+
+**Check it:** `data/clock.csv` rows X1, X2, X3; evidence base 10.1-10.3, 15.7.
 
 ## 3. Over 7% of the underlying transcripts contain deliberately spoofed tool calls
 
@@ -85,13 +103,14 @@ the rebuild time t₀ has four independent confirmations (W-8).
 
 ## 4. Type-C rows carry no `P`, and they are most of the corpus
 
-Sixteen of twenty-one rows are pre-existing controls. They were never applied, so there is no
+Sixteen of twenty-two rows are pre-existing controls, and three more are standing
+controls from outside the corpus. They were never applied, so there is no
 application event, no interval, and **no `P_wall`**. Computing one for them would be a
 substantive error, not a formatting one.
 
 They are measured binarily instead: was the protection goal achieved, and by which mechanism.
 That is a weaker measurement, and it is the reason the headline result is three numbers rather
-than twenty-one.
+than twenty-two.
 
 The corpus contains **exactly one control-application event** — the Artifactory rebuild at
 `2026-07-06T01:16Z`. That is not a gap in the data collection; it is a finding about the
@@ -119,15 +138,18 @@ state follows from the evidence. Here nothing is named.
 **Check it:** `data/clock.csv` column `state_determinable`;
 `tests/test_values.py::test_exactly_one_state_is_not_source_determinable`.
 
-## 6. Five of sixteen instruments rest on qualitative reading, not a term count
+## 6. Six of seventeen instruments rest on qualitative reading, not a term count
 
 The novelty claim — that no instrument carries a time axis for containment — is established by
 term count for **eleven** instruments and by qualitative reading of the evidence base for
-**five** (RAND SL1-SL5, NIST AU-9, the Fujitsu measurement framework, MITRE ATT&CK, and the EU
-AI Act / NIST AI RMF row as mapped by CSA).
+**six** (RAND SL1-SL5, NIST AU-9, the Fujitsu measurement framework, MITRE ATT&CK, the EU
+AI Act / NIST AI RMF row as mapped by CSA, and METR's documented-incident catalogue).
 
 Any headline sentence should use **eleven**, because that is the number a reviewer can re-run.
-The five qualitative rows are supporting context.
+The six qualitative rows are supporting context. METR's catalogue is the most pointed of them:
+it is the most extensive public catalogue of AI agent incidents, it scores every entry on two
+axes — overreach and deception — and neither is duration. No entry records how long a control
+held.
 
 Three further caveats inside the counted block. **First**, the counts for the three
 containment-verification papers (CV1-CV3) are given in the evidence base *jointly* across all

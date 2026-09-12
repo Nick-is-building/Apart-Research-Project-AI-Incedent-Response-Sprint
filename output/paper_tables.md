@@ -36,6 +36,7 @@ Type C rows are pre-existing controls: no application event, therefore no `P_wal
 | C16 | C | Integrity of the Artifactory container image cache | A workload resolving an image reference receives the trusted im… | assumption | PRE_EXISTING | NEVER | — | defeated_no_effect | none | PRIMARY |
 | X1 | X | Network restrictions on access to GitHub (UK AISI cyber range) | The agent does not reach GitHub from the evaluation environment | assumption | PRE_EXISTING | NOT_DATED | — | bypassed | K1_alternative | PRIMARY |
 | X2 | X | Harness write block against the public wiki (Nightingale / DseWiki) | The agent does not write to public wikis | assumption | PRE_EXISTING | NOT_DATED | — | held | K1_alternative | SECONDARY |
+| X3 | X | Web access restriction on evaluation agents | Prevent agents from retrieving data from the public web | operator | PRE_EXISTING | NOT_DATED | — | bypassed | K1_alternative | SECONDARY |
 
 ¹ C8: the state is **not determinable from the source**. P1 records only that the first privileged host-mount pod failed and that a second succeeded minutes later, without describing the difference, so the distinction between a defeated control and a circumvented one cannot be made. `broken` is the recorded value but is as much a claim as `bypassed` would be. This is the only such row in the corpus.
 
@@ -50,8 +51,8 @@ The corpus contains exactly one control-application event: the Artifactory rebui
 | A — applied, nested | 3 | 0 | 3 | 0 | 0 | 0 | 3 |
 | B — applied, not nested | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | C — pre-existing | 16 | 1 | 6 | 1 | 1 | 7 | 0 |
-| X — out of corpus | 2 | 0 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **21** | **1** | **10** | **1** | **1** | **8** | **3** |
+| X — out of corpus | 3 | 0 | 2 | 0 | 0 | 1 | 0 |
+| **Total** | **22** | **1** | **11** | **1** | **1** | **8** | **3** |
 
 ---
 
@@ -110,7 +111,7 @@ The 18/19 July reading is carried as a **range** because the source gives one.
 
 ## Table 4 — The gap, instrument by instrument
 
-**11 instruments where the absence of a time axis for containment was established by term count, and 5 more by qualitative reading.** The two are separated below because the evidence is not uniform across them: the novelty claim rests on the counted block, and the qualitative block is supporting context. Any headline sentence uses **11**, because that is the number a reviewer can re-run.
+**11 instruments where the absence of a time axis for containment was established by term count, and 6 more by qualitative reading.** The two are separated below because the evidence is not uniform across them: the novelty claim rests on the counted block, and the qualitative block is supporting context. Any headline sentence uses **11**, because that is the number a reviewer can re-run.
 
 A blank cell means **the evidence base gives no count for that term in that instrument** — it is not a zero.
 
@@ -136,7 +137,7 @@ The single `duration` in SC-7 (I06) is worth reading closely. It sits in SC-7.4 
 
 ---
 
-### 4b — Qualitative (5 instruments): supporting context
+### 4b — Qualitative (6 instruments): supporting context
 
 No term count exists for these in the evidence base. Their gap is stated qualitatively, and they are reported separately so that no reader has to consult `count_method` to see which kind of evidence they are looking at.
 
@@ -147,8 +148,9 @@ No term count exists for these in the evidence base. Their gap is stated qualita
 | I07 | Fujitsu: AI Sandboxes - A Threat Model, Taxonomy, and Measureme… | arXiv 2606.18532, June 2026, 50 pp. | 15 measurement dimensions for AI sandboxes | — | — | — | — | — | — | — | FALSE | qualitative no term count | N4; evidence base 12 |
 | I15 | MITRE ATT&CK | 2026 | adversary tactics and techniques catalogue | — | — | — | — | — | — | — | FALSE | qualitative no term count | N10; X01 (assessment); evidence base 12, 6/K-5 |
 | I16 | EU AI Act and NIST AI RMF, as mapped by CSA AICM | CSA AICM v1.1.1 mappings sheet, 2026-07-22 | general AI governance requirements | — | — | — | — | — | — | — | FALSE | qualitative no term count | N2 (mappings sheet); evidence base 12.2 |
+| I17 | METR documented-incident catalogue (companion to the Frontier R… | 2026-05-19, updated since; 44 incidents | agent behaviour, scored for scope violation and conceal… | — | — | — | — | — | — | — | FALSE | qualitative no term count | N11; https://metr.org/agent-incidents/ |
 
-**`time axis` is FALSE in all 16 rows.** `tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any instrument ever gains one, and a second test fails if the generated summary row in `data/instruments.csv` drifts from the rows it describes.
+**`time axis` is FALSE in all 17 rows.** `tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any instrument ever gains one, and a second test fails if the generated summary row in `data/instruments.csv` drifts from the rows it describes.
 
 ---
 

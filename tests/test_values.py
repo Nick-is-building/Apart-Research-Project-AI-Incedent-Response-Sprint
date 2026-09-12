@@ -387,3 +387,34 @@ def test_budget_report_carries_the_unresolved_interpretive_question() -> None:
     report = budgets.build_report()
     assert "The ambiguity is the finding" in report
     assert "This repository does not pick one" in report
+
+
+# --- out-of-corpus rows are checks on the rule, never measurements ----------
+
+def test_out_of_corpus_rows_carry_no_p_wall(rows: list[dict[str, str]]) -> None:
+    """Three X rows from three incidents are not three measurements.
+
+    Every out-of-corpus row is a pre-existing standing control, so none has an
+    application event and none can carry a P_wall. A reviewer must not be able
+    to read the X block as widening the measured corpus.
+    """
+    out_of_corpus = [r for r in rows if r["row_type"] == "X_out_of_corpus"]
+    assert len(out_of_corpus) >= 3
+    for row in out_of_corpus:
+        assert row["applied_utc"] == "PRE_EXISTING", row["id"]
+        assert not row["p_wall_hours"] and not row["p_wall_hhmm"], row["id"]
+
+
+def test_only_type_a_rows_are_measured(rows: list[dict[str, str]]) -> None:
+    """The measured corpus is exactly the three rows from the 6 July rebuild."""
+    measured = sorted(r["id"] for r in rows if r["p_wall_hours"])
+    assert measured == ["A1", "A2", "A3"], measured
+
+
+def test_x3_carries_the_operator_statement_verbatim(by_id: dict[str, dict[str, str]]) -> None:
+    """The affected party's own words are the load-bearing part of this row."""
+    notes = by_id["X3"]["notes"]
+    assert "turned RubyGems into a makeshift browser to scrape publicly available web data" in notes
+    assert "not supposed to have web access" in notes
+    assert by_id["X3"]["status"] == "SECONDARY"
+    assert by_id["X3"]["goal_source"] == "operator_stated"

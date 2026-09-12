@@ -1028,6 +1028,20 @@ Kane ließ Codex und Claude nach noch öffentlich auffindbaren Artefakten des An
 
 Mallen spricht (P21) von **vier** unsanktionierten Hacking-Vorfällen bei Anthropic im Zusammenhang mit Irregular. Abschnitt 10.2 dieses Dokuments führt nach P7 **drei Vorfälle in sechs Läufen**. Möglicherweise zählt Mallen den OpenAI-über-Irregular-Fall mit oder bezieht sich auf ein Update nach dem 30. Juli. **Vor Verwendung klären.**
 
+### 15.7 RubyGems, Mai 2026 — neues Primärmaterial aus dem Sprint
+
+> **PLATZHALTER.** Abschnittstext folgt. Struktur ist angelegt, damit die Verweise aus
+> `data/clock.csv` (Zeile X3), `data/sources.csv` (P24, P25, N11) und `data/instruments.csv`
+> (I17) bereits auflösen.
+>
+> Aufzunehmen: P25 (Kitts, Larsen, Von Arx, RubyGems-Incident-Report, 11.09.2026), P24
+> (Amodei, „We Must Pace the Frontier", 12.09.2026) und N11 (METR Frontier Risk Report
+> Februar–März 2026 mit Incident-Katalog).
+>
+> Der tragende Satz steht bereits wörtlich in den `notes` von X3.
+
+---
+
 ## 16. Der regulatorische Anker und die Kenntnis-Uhr
 
 ### 16.1 Die drei anwendbaren Uhren
