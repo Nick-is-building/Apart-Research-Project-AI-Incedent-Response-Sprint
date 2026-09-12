@@ -229,40 +229,82 @@ def table_budgets(rows: list[dict[str, str]]) -> list[str]:
 # --- Table 4: the instruments ----------------------------------------------
 
 def table_instruments() -> list[str]:
-    rows = read("instruments.csv")
+    import instruments_summary
+
+    all_rows = read("instruments.csv")
+    rows = instruments_summary.instrument_rows(all_rows)
+    counted, qualitative, methods = instruments_summary.tally(all_rows)
+
     count_columns = [
         ("n_duration", "duration"), ("n_how_long", "how long"), ("n_withstand", "withstand"),
         ("n_containment", "containment"), ("n_egress", "egress"),
         ("n_hours", "hours"), ("n_minutes", "minutes"),
     ]
-    out = [
-        "## Table 4 — The gap, instrument by instrument",
-        "",
-        "The backbone of the novelty claim. A blank cell means **the evidence base gives no count "
-        "for that term in that instrument** — it is not a zero. `count method` records how each "
-        "row was established, so a qualitative row is never mistaken for a counted one.",
-        "",
-    ]
-    out += table(
+    headers = (
         ["id", "instrument", "version / date", "object protected"]
         + [label for _, label in count_columns]
-        + ["time axis", "count method", "source"],
-        [
+        + ["time axis", "count method", "source"]
+    )
+
+    def body(group: list[dict[str, str]]) -> list[list[str]]:
+        return [
             [r["id"], truncate(r["instrument"], 64), truncate(r["version_or_date"], 42),
              truncate(r["object_protected"], 56)]
             + [r[column] or "—" for column, _ in count_columns]
             + [r["n_time_axis_present"], r["count_method"].replace("_", " "), r["source_ref"]]
-            for r in rows
-        ],
-    )
-    methods = Counter(r["count_method"] for r in rows)
+            for r in group
+        ]
+
+    counted_rows = [r for r in rows if r["count_method"] in instruments_summary.COUNTED_METHODS]
+    qualitative_rows = [r for r in rows
+                        if r["count_method"] == instruments_summary.QUALITATIVE_METHOD]
+
+    out = [
+        "## Table 4 — The gap, instrument by instrument",
+        "",
+        f"**{counted} instruments where the absence of a time axis for containment was "
+        f"established by term count, and {qualitative} more by qualitative reading.** The two "
+        "are separated below because the evidence is not uniform across them: the novelty claim "
+        "rests on the counted block, and the qualitative block is supporting context. Any "
+        f"headline sentence uses **{counted}**, because that is the number a reviewer can re-run.",
+        "",
+        "A blank cell means **the evidence base gives no count for that term in that "
+        "instrument** — it is not a zero.",
+        "",
+        f"### 4a — Counted ({counted} instruments): the novelty claim rests here",
+        "",
+    ]
+    out += table(headers, body(counted_rows))
     out += [
         "",
-        f"**{len(rows)} instruments, and `time axis` is FALSE in every one.** "
-        "By count method: "
-        + ", ".join(f"{m.replace('_', ' ')} {n}" for m, n in sorted(methods.items()))
-        + ". `tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any "
-          "instrument ever gains one.",
+        "Term counts for CV1–CV3 are given in the evidence base across the three cluster full "
+        "texts **jointly**, not per paper. A zero total across three texts entails zero in each, "
+        "so the zero counts are carried per row as deduction; `containment` and `egress`, which "
+        "are non-zero and not splittable, are left blank.",
+        "",
+        "The single `duration` in SC-7 (I06) is worth reading closely. It sits in SC-7.4 "
+        "*External Telecommunications Services* — *“Document each exception to the traffic flow "
+        "policy with a supporting mission or business need and duration of that need.”* That is "
+        "the lifetime of an administrative exception to the policy, not the endurance of a "
+        "boundary under attack. The one duration in the most comprehensive boundary-protection "
+        "catalogue in existence measures paperwork.",
+        "",
+        "---",
+        "",
+        f"### 4b — Qualitative ({qualitative} instruments): supporting context",
+        "",
+        "No term count exists for these in the evidence base. Their gap is stated qualitatively, "
+        "and they are reported separately so that no reader has to consult `count_method` to see "
+        "which kind of evidence they are looking at.",
+        "",
+    ]
+    out += table(headers, body(qualitative_rows))
+    out += [
+        "",
+        f"**`time axis` is FALSE in all {counted + qualitative} rows.** "
+        "`tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any instrument "
+        "ever gains one, and a second test fails if the generated summary row in "
+        "`data/instruments.csv` drifts from the rows it describes.",
     ]
     return out
 

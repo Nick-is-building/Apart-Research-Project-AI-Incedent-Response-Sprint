@@ -110,17 +110,18 @@ The 18/19 July reading is carried as a **range** because the source gives one.
 
 ## Table 4 — The gap, instrument by instrument
 
-The backbone of the novelty claim. A blank cell means **the evidence base gives no count for that term in that instrument** — it is not a zero. `count method` records how each row was established, so a qualitative row is never mistaken for a counted one.
+**11 instruments where the absence of a time axis for containment was established by term count, and 5 more by qualitative reading.** The two are separated below because the evidence is not uniform across them: the novelty claim rests on the counted block, and the qualitative block is supporting context. Any headline sentence uses **11**, because that is the number a reviewer can re-run.
+
+A blank cell means **the evidence base gives no count for that term in that instrument** — it is not a zero.
+
+### 4a — Counted (11 instruments): the novelty claim rests here
 
 | id | instrument | version / date | object protected | duration | how long | withstand | containment | egress | hours | minutes | time axis | count method | source |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| I01 | RAND SL1-SL5 | RR-A2849-1, 2024 | model weights against theft; 38 attack vectors | — | — | — | — | — | — | — | FALSE | qualitative no term count | N5; evidence base 12 |
 | I02 | SL5 Standard for AI Security | Preliminary draft v0.1, March 2026, arXiv… | physical perimeter: ICD-705 SCIF construction, Red Zone… | 0 | — | — | 2 | 4 | — | — | FALSE | full text term count | N6; evidence base 12 |
 | I03 | GPAI Code of Practice, Safety & Security chapter | 2026 (143,901 characters counted) | model weights against self-exfiltration | 0 | — | — | 0 | 0 | — | — | FALSE | full text term count | N1; evidence base 12 |
 | I04 | CSA AI Controls Matrix | v1.1.1, generated 2026-07-22, 247 control… | 247 controls across the AI stack | 0 | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count | N2; evidence base 12, 12.1 |
-| I05 | NIST SP 800-53 Rev. 5, AU-9 and enhancements | Rev. 5 | records after they are created | — | — | — | — | — | — | — | FALSE | qualitative no term count | N3; evidence base 12 |
-| I06 | NIST SP 800-53 Rev. 5, SC-7 Boundary Protection | Rev. 5, 29 control enhancements | system boundary: deny-by-default, prevent exfiltration,… | — | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count | N3; evidence base 12, 12.4 |
-| I07 | Fujitsu: AI Sandboxes - A Threat Model, Taxonomy, and Measureme… | arXiv 2606.18532, June 2026, 50 pp. | 15 measurement dimensions for AI sandboxes | — | — | — | — | — | — | — | FALSE | qualitative no term count | N4; evidence base 12 |
+| I06 | NIST SP 800-53 Rev. 5, SC-7 Boundary Protection | Rev. 5, 29 control enhancements | system boundary: deny-by-default, prevent exfiltration,… | 1 | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count | N3; evidence base 12, 12.4 |
 | I08 | Guidelight Control Standard | v1.1, published 2026-08-10 | six practices, all detection and reaction | 0 | — | 0 | — | — | — | — | FALSE | full text term count | N7; evidence base 12 |
 | I09 | OpenAI Preparedness Framework | v2, December 2023, maintained | capability thresholds and safeguards | 0 | — | 0 | 0 | 0 | 0 | 0 | FALSE | partial read full term search | P15; evidence base 12 |
 | I10 | GPT-6 Astra Safety Overview | 2026-09-03, 185,000 characters | customer-facing safety documentation for a Critical-can… | 0 | 0 | — | 0 | — | — | — | FALSE | partial read full term search | P16; evidence base 12 |
@@ -128,10 +129,26 @@ The backbone of the novelty claim. A blank cell means **the evidence base gives 
 | I12 | Moon and Varshney: Containment Verification - AI Safety Guarant… | arXiv 2605.09045, 14 pp., ICML 2026 works… | the agentic framework (containment layer) rather than t… | 0 | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count aggregated over cluster | CV1; evidence base 11.7 |
 | I13 | Hossain et al.: The Containment Gap - How Deployed Agentic AI F… | arXiv 2606.12797, 9 pp. | six containment principles from a compositional model o… | 0 | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count aggregated over cluster | CV2; evidence base 11.7 |
 | I14 | Metere: Methods for Formal Verification of Agent Skills - Three… | arXiv 2605.23951, 29 pp. | capability containment, mapped to EU AI Act Art. 9/13/1… | 0 | 0 | 0 | — | — | 0 | 0 | FALSE | full text term count aggregated over cluster | CV3; evidence base 11.7 |
+
+Term counts for CV1–CV3 are given in the evidence base across the three cluster full texts **jointly**, not per paper. A zero total across three texts entails zero in each, so the zero counts are carried per row as deduction; `containment` and `egress`, which are non-zero and not splittable, are left blank.
+
+The single `duration` in SC-7 (I06) is worth reading closely. It sits in SC-7.4 *External Telecommunications Services* — *“Document each exception to the traffic flow policy with a supporting mission or business need and duration of that need.”* That is the lifetime of an administrative exception to the policy, not the endurance of a boundary under attack. The one duration in the most comprehensive boundary-protection catalogue in existence measures paperwork.
+
+---
+
+### 4b — Qualitative (5 instruments): supporting context
+
+No term count exists for these in the evidence base. Their gap is stated qualitatively, and they are reported separately so that no reader has to consult `count_method` to see which kind of evidence they are looking at.
+
+| id | instrument | version / date | object protected | duration | how long | withstand | containment | egress | hours | minutes | time axis | count method | source |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| I01 | RAND SL1-SL5 | RR-A2849-1, 2024 | model weights against theft; 38 attack vectors | — | — | — | — | — | — | — | FALSE | qualitative no term count | N5; evidence base 12 |
+| I05 | NIST SP 800-53 Rev. 5, AU-9 and enhancements | Rev. 5 | records after they are created | — | — | — | — | — | — | — | FALSE | qualitative no term count | N3; evidence base 12 |
+| I07 | Fujitsu: AI Sandboxes - A Threat Model, Taxonomy, and Measureme… | arXiv 2606.18532, June 2026, 50 pp. | 15 measurement dimensions for AI sandboxes | — | — | — | — | — | — | — | FALSE | qualitative no term count | N4; evidence base 12 |
 | I15 | MITRE ATT&CK | 2026 | adversary tactics and techniques catalogue | — | — | — | — | — | — | — | FALSE | qualitative no term count | N10; X01 (assessment); evidence base 12, 6/K-5 |
 | I16 | EU AI Act and NIST AI RMF, as mapped by CSA AICM | CSA AICM v1.1.1 mappings sheet, 2026-07-22 | general AI governance requirements | — | — | — | — | — | — | — | FALSE | qualitative no term count | N2 (mappings sheet); evidence base 12.2 |
 
-**16 instruments, and `time axis` is FALSE in every one.** By count method: full text term count 5, full text term count aggregated over cluster 3, partial read full term search 2, qualitative no term count 5, term search only 1. `tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any instrument ever gains one.
+**`time axis` is FALSE in all 16 rows.** `tests/test_registers.py::test_no_instrument_has_a_time_axis` fails if any instrument ever gains one, and a second test fails if the generated summary row in `data/instruments.csv` drifts from the rows it describes.
 
 ---
 

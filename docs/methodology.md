@@ -185,6 +185,30 @@ rather than quietly carried forward.
 `data/contradictions.csv` holds W-1 to W-9 from evidence base section 7. Four rows —
 W-1, W-2, W-8, W-9 — are flagged `in_paper_main_text`; the rest go to an appendix.
 
+**Two count discrepancies in the evidence base, resolved here rather than carried forward.**
+
+*Section 7's header contradicts its own table.* It reads "Acht belegte Zeilen. Vier davon
+intradokumentarisch" — eight rows, four intra-document. The section contains **nine** rows,
+W-1 to W-9, of which **six** carry the intra-document marker: W-1, W-2, W-3, W-5, W-7, W-9.
+The header was written when there were eight rows and was never updated after W-9 was restored
+(correction 17 in evidence base section 19). This repository builds from the contents: nine
+rows, six intra-document.
+
+*The instrument count.* The evidence base gives ten in the heading of section 12, fourteen rows
+in its table, and twelve in the project brief; none was reconciled across drafts. The figure to
+use is neither the row count nor any of those: **eleven** instruments have the absence of a time
+axis established by term count, and **five** more by qualitative reading. Headline sentences use
+eleven, because that is the number a reviewer can re-run. All sixteen rows stay in the data, and
+`src/instruments_summary.py` writes the two numbers into a generated summary row at the foot of
+`data/instruments.csv` so they cannot drift from the rows they describe.
+
+*One count filled in.* SC-7's `n_duration` is **1**, not blank. The occurrence is in SC-7.4
+*External Telecommunications Services*: "Document each exception to the traffic flow policy with
+a supporting mission or business need and duration of that need." That is the lifetime of an
+administrative exception, not the endurance of a boundary under attack, so
+`n_time_axis_present` stays FALSE — and the claim is stronger for it: the one duration in the
+most comprehensive boundary-protection catalogue in existence measures paperwork.
+
 ## 8. Reproducing
 
 ```

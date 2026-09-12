@@ -91,3 +91,73 @@ def test_all_four_figures_render_to_png_and_pdf(tmp_path: Path) -> None:
         assert path.exists() and path.stat().st_size > 1000, path
     suffixes = {p.suffix for p in written}
     assert suffixes == {".png", ".pdf"}
+
+
+# --- the documents a reviewer is pointed at --------------------------------
+
+REQUIRED_README_ANCHORS = [
+    # The four findings that live only in the repository.
+    "exactly one control-application event",
+    "B1` and `B2",
+    "no measurable `P_wall`",
+    "Nineteen research errors",
+    # Reproduction and navigation.
+    "./verify.sh",
+    "46 h 50 min",
+    "docs/limitations.md",
+    "docs/methodology.md",
+    "docs/belegbasis-v3.md",
+    # Dual use.
+    "no exploit code",
+    "mechanism inventory",
+]
+
+REQUIRED_LIMITATIONS_ANCHORS = [
+    "none for its magnitude",              # P_exp: ordering proved, magnitude not
+    "One incident",
+    "spoofed tool calls",
+    "Type-C rows carry no `P`",
+    "not determinable from the source",
+    "qualitative reading, not a term count",
+    "not to regulatory filing",
+    "What would change the result",
+]
+
+
+def test_readme_carries_its_required_anchors() -> None:
+    text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    missing = [a for a in REQUIRED_README_ANCHORS if a not in text]
+    assert not missing, f"README.md is missing: {missing}"
+
+
+def test_readme_stays_navigational() -> None:
+    """The README answers 'what is in here and how do I check it', not the paper's argument."""
+    text = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert len(text.splitlines()) < 200, "README has grown into a second paper"
+
+
+def test_limitations_document_carries_every_required_limitation() -> None:
+    text = (REPO_ROOT / "docs" / "limitations.md").read_text(encoding="utf-8")
+    missing = [a for a in REQUIRED_LIMITATIONS_ANCHORS if a not in text]
+    assert not missing, f"docs/limitations.md is missing: {missing}"
+
+
+def test_limitations_names_the_seven_percent_figure() -> None:
+    """The sharpest limitation must carry its number, not a euphemism."""
+    text = (REPO_ROOT / "docs" / "limitations.md").read_text(encoding="utf-8")
+    assert "7%" in text
+    assert "96 transcripts" in text
+    assert "W-4" in text
+
+
+def test_writing_rule_holds_in_the_documents() -> None:
+    """Always P_wall or P_exp, never a bare P."""
+    import re
+
+    for name in ("README.md", "docs/limitations.md", "docs/methodology.md"):
+        text = (REPO_ROOT / name).read_text(encoding="utf-8")
+        # Strip inline code and fenced blocks, where `P` is quoted as notation.
+        stripped = re.sub(r"```.*?```", "", text, flags=re.S)
+        stripped = re.sub(r"`[^`]*`", "", stripped)
+        offenders = re.findall(r"(?<![\w_])P(?![\w_])", stripped)
+        assert not offenders, f"{name}: {len(offenders)} bare 'P' occurrence(s)"

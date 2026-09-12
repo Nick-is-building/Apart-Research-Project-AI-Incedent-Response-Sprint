@@ -1,0 +1,33 @@
+protection-time verification run log
+====================================
+
+timestamp (UTC)   2026-09-12T17:54:53Z
+git SHA           57d88a6913497fabd690688a0d9f53dfe09e9599
+working tree      15 uncommitted file(s)
+python            Python 3.11.15
+platform          Linux 6.18.44-fc-v24 x86_64
+mode              full
+numpy             2.4.6
+matplotlib        3.11.2
+pytest            9.1.1
+
+Reference values - evidence base 4.3. These are computed from applied_utc and
+reconstituted_utc in data/clock.csv, never entered by hand.
+
+id   expected       actual         result
+---- -------------- -------------- ------
+A1   46 h 50 min    46 h 50 min    PASS
+A2   62 h 45 min    62 h 45 min    PASS
+A3   175 h 30 min   175 h 30 min   PASS
+
+Other invariants
+----------------
+test suite (69 passed)                               PASS
+no type-C row carries a P_wall                       PASS
+expected outputs present (12)                        PASS
+instruments with a containment time axis             0 (expected 0)
+
+VERDICT  VERIFIED - all reference values reproduce and every check passed.
+
+Diff this file against your own run. The timestamp and git SHA will differ;
+nothing else should.
