@@ -33,6 +33,13 @@ def read(name: str) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def instruments() -> list[dict[str, str]]:
+    """The instrument rows, without the generated summary row at the foot."""
+    import instruments_summary
+
+    return instruments_summary.instrument_rows(read("instruments.csv"))
+
+
 @pytest.fixture(scope="module")
 def registered_codes() -> set[str]:
     return {row["key"] for row in read("sources.csv")}
@@ -78,7 +85,8 @@ def test_cited_codes_resolve_to_the_register(
     registered_codes: set[str], filename: str, columns: tuple[str, ...]
 ) -> None:
     unknown: dict[str, set[str]] = {}
-    for row in read(filename):
+    rows = instruments() if filename == "instruments.csv" else read(filename)
+    for row in rows:
         row_id = row[next(iter(row))]
         for column in columns:
             missing = cited_codes(row[column]) - registered_codes
@@ -94,7 +102,8 @@ def test_cited_codes_resolve_to_the_register(
 def test_every_row_cites_at_least_one_registered_source(
     registered_codes: set[str], filename: str, column: str
 ) -> None:
-    for row in read(filename):
+    rows = instruments() if filename == "instruments.csv" else read(filename)
+    for row in rows:
         row_id = row[next(iter(row))]
         value = row[column]
         has_code = bool(cited_codes(value) & registered_codes)
@@ -120,7 +129,7 @@ def test_instrument_counts_are_integers_or_deliberately_blank() -> None:
         "n_duration", "n_how_long", "n_withstand", "n_containment",
         "n_egress", "n_hours", "n_minutes",
     ]
-    for row in read("instruments.csv"):
+    for row in instruments():
         for column in count_columns:
             value = row[column].strip()
             if value:
@@ -136,7 +145,7 @@ def test_count_method_is_recorded_for_every_instrument() -> None:
         "term_search_only",
         "qualitative_no_term_count",
     }
-    for row in read("instruments.csv"):
+    for row in instruments():
         assert row["count_method"] in permitted, f"{row['id']}: {row['count_method']!r}"
 
 
@@ -146,15 +155,48 @@ def test_instruments_without_a_term_count_carry_no_numbers() -> None:
         "n_duration", "n_how_long", "n_withstand", "n_containment",
         "n_egress", "n_hours", "n_minutes",
     ]
-    for row in read("instruments.csv"):
+    for row in instruments():
         if row["count_method"] == "qualitative_no_term_count":
             assert all(not row[c].strip() for c in count_columns), row["id"]
 
 
 def test_instrument_ids_are_unique_and_ordered() -> None:
-    ids = [row["id"] for row in read("instruments.csv")]
+    ids = [row["id"] for row in instruments()]
     assert len(ids) == len(set(ids))
     assert ids == sorted(ids)
+    assert read("instruments.csv")[-1]["id"] == "SUMMARY", "the summary row goes last"
+
+
+def test_generated_summary_matches_the_rows_it_describes() -> None:
+    """The one number the paper may quote must not drift from the data.
+
+    Eleven instruments carry a term count, five rest on qualitative reading.
+    Headline sentences use eleven, because that is what a reviewer can re-run.
+    """
+    import instruments_summary
+
+    all_rows = read("instruments.csv")
+    stored = all_rows[-1]
+    assert stored["count_method"] == "generated_summary"
+
+    counted, qualitative, _ = instruments_summary.tally(all_rows)
+    assert counted == 11, counted
+    assert qualitative == 5, qualitative
+    assert counted + qualitative == len(instruments())
+
+    assert stored["scope_note"].startswith(f"counted={counted}; qualitative={qualitative}.")
+    assert stored["scope_note"] == instruments_summary.summary_note(all_rows), (
+        "the stored summary has drifted; run python3 src/instruments_summary.py"
+    )
+
+
+def test_sc7_duration_is_counted_and_scoped() -> None:
+    """SC-7's single `duration` is an administrative exception's lifetime."""
+    sc7 = next(r for r in instruments() if r["id"] == "I06")
+    assert sc7["n_duration"] == "1"
+    assert "SC-7.4" in sc7["scope_note"]
+    assert "not the endurance of a boundary under attack" in sc7["scope_note"]
+    assert sc7["n_time_axis_present"] == "FALSE"
 
 
 # --- task 5: the contradiction register ------------------------------------
