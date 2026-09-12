@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Generated artefacts are committed deliberately (see README);
+# only transient scratch output is ignored.
+output/*.tmp
