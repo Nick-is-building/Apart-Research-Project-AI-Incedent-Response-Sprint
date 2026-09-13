@@ -4,32 +4,7 @@
 
 Every quantitative claim in `output/paper.md` is listed with the file it should trace to and the value the repository yields when that file is recomputed. Claims that do not reproduce are reported here, not reconciled: where the prose and the data disagree, the disagreement is the finding.
 
-**52 of 55 claims reproduce.** 2 do not. 1 cannot be resolved to a file.
-
-## Claims requiring attention
-
-### DOES NOT REPRODUCE — §3: Twenty-five primary sources
-
-- **Source:** `data/sources.csv`
-- **Paper says:** 25
-- **Repository yields:** 23 P-coded; 26 read in full or in part; 38 primary rows in total
-- **Note:** No reading of the register yields 25. Nearest is 23 P-coded entries, and the register has grown by P24 and P25 since the text was drafted. Reported, not reconciled.
-
-### DOES NOT REPRODUCE — §3: nine standards or frameworks
-
-- **Source:** `data/sources.csv`
-- **Paper says:** 9
-- **Repository yields:** 11
-- **Note:** The register now holds eleven framework rows: N1-N9 plus N10 (MITRE ATT&CK) and N11 (METR Frontier Risk Report), both added after the text was drafted. Reported, not reconciled.
-
-### not resolvable to a file — §1: published three weeks after the last public timeline reconstruction
-
-- **Source:** `data/sources.csv`
-- **Paper says:** three weeks
-- **Repository yields:** not computable
-- **Note:** The register does not identify which artefact 'the last public timeline reconstruction' denotes. Candidates and their gaps to 26 August: Black Hat transcript 5 August (21 days, exactly three weeks), CrowdStrike 4 August (22), SecureLayer7 30 July (27), Hugging Face timeline 27 July (30). Reported, not reconciled.
-
----
+**56 of 56 claims reproduce.** 0 do not. 0 cannot be resolved to a file.
 
 ## All claims
 
@@ -79,14 +54,15 @@ Every quantitative claim in `output/paper.md` is listed with the file it should 
 | 5 | at least 96 transcripts with spoofed tool calls | `data/contradictions.csv W-4` | True | True | ok |
 | 5 | roughly 7 percent of those examined | `data/contradictions.csv W-4` | True | True | ok |
 | Appendix B | nine contradictions, four in the main text | `data/contradictions.csv` | 9/4 | 9/4 | ok |
-| 3 | Twenty-five primary sources | `data/sources.csv` | 25 | 23 P-coded; 26 read in full or in part; 38 primary rows in total | **FAIL** |
-| 3 | nine standards or frameworks | `data/sources.csv` | 9 | 11 | **FAIL** |
+| 3 | twenty-three primary sources | `data/sources.csv` | 23 | 23 | ok |
+| 3 | eleven standards or frameworks | `data/sources.csv` | 11 | 11 | ok |
 | 3 | four incident reports read in full | `data/sources.csv` | 4 | 4 | ok |
 | 2 | three 2026 containment-verification papers | `data/sources.csv` | 3 | 3 | ok |
 | 1, 3 | OpenAI technical report published 26 August 2026 | `data/sources.csv` | 2026-08-26 | 2026-08-26 | ok |
 | 4.6 | response budget published 18 August | `data/sources.csv` | 2026-08-18 | 2026-08-18 | ok |
 | 4.6 | monitoring post of March 2026 | `data/sources.csv` | 2026-03-19 | 2026-03-19 | ok |
 | 4.3 | RubyGems incident disclosed 11 September | `data/sources.csv` | 2026-09-11 | 2026-09-11 | ok |
-| 1 | published three weeks after the last public timeline reconstruction | `data/sources.csv` | three weeks | not computable | **unresolved** |
+| 1 | nineteen days after the most detailed public timeline reconstruction | `data/sources.csv` | 19 | 19 | ok |
+| 1 | the reconstruction was built from the Black Hat talk | `data/sources.csv` | True | True | ok |
 | Abstract | abstract is 149 words, unedited | `paper-text.md` | 149 | 149 | ok |
 | throughout | writing rule: no bare P, only P_wall and P_exp | `output/paper.md` | 0 | 0 | ok |

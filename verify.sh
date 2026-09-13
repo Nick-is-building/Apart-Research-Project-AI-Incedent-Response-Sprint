@@ -161,6 +161,14 @@ step "Assembling the paper"
 "$PYTHON" src/assemble_paper.py --quiet
 ok "output/paper.md"
 
+step "Building the submission document from the official template"
+if [[ -f "Digital Minds Research Sprint submission template.docx" ]]; then
+  "$PYTHON" src/build_submission.py --quiet
+  ok "output/paper.docx"
+else
+  printf '    skipped (template not present)\n'
+fi
+
 step "Tracing the paper's claims back to the data"
 "$PYTHON" src/check_claims.py --quiet
 CLAIMS_LINE="$("$PYTHON" - <<'PY'
@@ -199,6 +207,7 @@ EXPECTED=(
   output/paper_tables.md
   output/paper.md
   output/paper_claims_check.md
+  output/paper.docx
 )
 if [[ $FAST -eq 0 ]]; then
   for stem in figure_1_timeline figure_2_cadence figure_3_states figure_4_awareness_clock; do

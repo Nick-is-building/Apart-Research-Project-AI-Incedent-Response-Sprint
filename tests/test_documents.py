@@ -163,3 +163,71 @@ def test_every_mapped_framework_resolves_to_the_registers(clause: str) -> None:
             if code not in source_codes:
                 unresolved.append(f"{framework} -> sources.csv {code}")
     assert not unresolved, unresolved
+
+
+# --- prose counts pinned to the register ------------------------------------
+
+def test_primary_source_count_in_the_paper_matches_the_register() -> None:
+    """§3 says twenty-three primary sources. The register must still say so."""
+    import re
+
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert "Twenty-three primary sources" in text
+    p_coded = [r["key"] for r in read_csv("sources.csv") if re.fullmatch(r"P\d+", r["key"])]
+    assert len(p_coded) == 23, len(p_coded)
+
+
+def test_framework_count_in_the_paper_matches_the_register() -> None:
+    """§3 says eleven standards or frameworks."""
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert "eleven standards or frameworks" in text
+    frameworks = [r["key"] for r in read_csv("sources.csv") if r["kind"] == "framework"]
+    assert len(frameworks) == 11, len(frameworks)
+
+
+def test_nineteen_day_gap_is_computable_from_the_register() -> None:
+    """§1 says nineteen days; both dates must be in sources.csv."""
+    import datetime
+
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert "nineteen days after the most detailed public timeline reconstruction" in text
+    by_key = {r["key"]: r for r in read_csv("sources.csv")}
+    assert by_key["P1"]["date"] == "2026-08-26"
+    assert by_key["P23"]["date"].startswith("2026-08-07")
+    gap = datetime.date(2026, 8, 26) - datetime.date(2026, 8, 7)
+    assert gap.days == 19
+
+
+# --- the submission document ------------------------------------------------
+
+def test_template_structure_is_recorded_from_the_file() -> None:
+    text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
+    assert "PENDING" not in text
+    for anchor in (
+        "Recommended length: 4 pages excluding references and appendix",
+        "US Letter",
+        "Arial 11 pt",
+        "5. Discussion and Limitations",
+        "LLM Usage Statement",
+        "150–250 words",
+    ):
+        assert anchor in text, anchor
+
+
+def test_submission_docx_is_built_from_the_template() -> None:
+    import zipfile
+
+    docx = REPO_ROOT / "output" / "paper.docx"
+    assert docx.exists() and docx.stat().st_size > 50_000
+    with zipfile.ZipFile(docx) as archive:
+        names = archive.namelist()
+        assert names[0] == "[Content_Types].xml", "content types must be the first entry"
+        for part in ("word/document.xml", "word/styles.xml", "word/numbering.xml"):
+            assert part in names, part
+        # the four figures travelled into the package
+        media = [n for n in names if n.startswith("word/media/")]
+        assert len(media) == 4, media
+        document = archive.read("word/document.xml").decode("utf-8")
+    assert "PROJECT TITLE" not in document, "template placeholder survived"
+    assert "Delete all guidance text" not in document, "guidance info box survived"
+    assert "Bypassed, Not Broken" in document

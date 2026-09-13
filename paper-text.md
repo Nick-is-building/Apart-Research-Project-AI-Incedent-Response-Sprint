@@ -21,7 +21,7 @@ The response, across industry and regulators, has converged on two remedies: bet
 
 That question is not asked because no instrument is built to record it. We surveyed seventeen — regulatory, standards-body, national, academic, and vendor. Not one attaches a duration to a containment control. Eleven were checked by term count over full text; the remaining six by qualitative reading. `duration`, `how long`, `withstand` and their variants are absent throughout, with one instructive exception: NIST SP 800-53 SC-7, the most comprehensive boundary-protection catalogue in existence with 29 control enhancements, contains the word `duration` exactly once, referring to the lifetime of an administrative exception to the traffic-flow policy.
 
-The measurement is possible in this one case because OpenAI published a timestamped event table as an appendix to its technical report. It was published on 26 August 2026, three weeks after the last public timeline reconstruction, and it contains something no other disclosure provides: the minute at which a containment control was applied.
+The measurement is possible in this one case because OpenAI published a timestamped event table as an appendix to its technical report. It was published on 26 August 2026, nineteen days after the most detailed public timeline reconstruction, which was built from the Black Hat talk and could not have drawn on it, and it contains something no other disclosure provides: the minute at which a containment control was applied.
 
 This paper does three things. It computes the three protection times the record supports. It establishes that all three controls were bypassed rather than broken, and that this is a property of the capability rather than of the control. And it proposes an audit clause that makes the quantity recordable in future, as an extension to an existing control rather than a new one.
 
@@ -41,7 +41,7 @@ This paper does three things. It computes the three protection times the record 
 
 ## 3. Methods
 
-**Sources.** Twenty-five primary sources and nine standards or frameworks. Four incident reports were read in full: OpenAI's technical report and its accompanying blog post, both of 26 August 2026; Hugging Face's technical timeline of 27 July; and the Black Hat USA 2026 transcript. METR and Redwood Research's independent investigation was read in part and term-searched in full. Every claim in the supporting evidence base carries a status — primary, primary-conflict, secondary, own reconstruction, unverified — and a locator.
+**Sources.** Twenty-three primary sources and eleven standards or frameworks. Four incident reports were read in full: OpenAI's technical report and its accompanying blog post, both of 26 August 2026; Hugging Face's technical timeline of 27 July; and the Black Hat USA 2026 transcript. METR and Redwood Research's independent investigation was read in part and term-searched in full. Every claim in the supporting evidence base carries a status — primary, primary-conflict, secondary, own reconstruction, unverified — and a locator.
 
 **The clock.** Each containment control identified in the record is one row. Rows carry three separate fields for scope, because the measurement depends on how the blocked capability is cut: the mechanism the control blocks technically, the protection goal the operator pursues with it, and whether that goal is stated by the operator or assumed by us. Protection time is measured against the goal.
 

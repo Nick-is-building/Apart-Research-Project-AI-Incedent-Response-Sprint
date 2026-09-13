@@ -177,17 +177,24 @@ def test_paper_template_records_the_requirements_verbatim() -> None:
         assert anchor in text, anchor
 
 
-def test_paper_template_does_not_invent_a_structure() -> None:
-    """The template has not been read; the file must keep saying so.
+def test_paper_template_records_the_template_not_a_reconstruction() -> None:
+    """The structure is now read from the file; the pending guard has retired.
 
-    A plausible-looking reconstruction would be indistinguishable from the real
-    thing to a later reader, so the absence has to stay loud until the actual
-    template is in the repository and recorded from it.
+    The recorded page setup must match the template's own sectPr, so a later
+    edit cannot substitute plausible values for measured ones.
     """
+    import zipfile
+    import xml.etree.ElementTree as ET
+
     text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
-    assert "PENDING" in text
-    assert "Not recorded" in text
-    assert "nothing here describes it" in text
+    template = REPO_ROOT / "Digital Minds Research Sprint submission template.docx"
+    with zipfile.ZipFile(template) as archive:
+        document = ET.fromstring(archive.read("word/document.xml"))
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    page = document.find(".//w:sectPr/w:pgSz", ns)
+    width = page.get("{%s}w" % ns["w"])
+    assert width in text, f"recorded page width does not match the template ({width})"
+
 
 
 # --- the assembled paper ----------------------------------------------------
@@ -262,7 +269,8 @@ def test_claims_check_reports_rather_than_reconciles() -> None:
     claims = check_claims.collect()
     assert len(claims) >= 50
     failing = [c for c in claims if c.status != check_claims.OK]
-    # The three known disagreements are expected to be present and reported.
-    assert len(failing) == 3, [c.claim for c in failing]
+    # Every claim should now reproduce; any that does not must carry a note
+    # explaining the disagreement rather than being quietly reconciled.
     for c in failing:
         assert c.note, f"{c.claim}: a non-reproducing claim must carry a note"
+    assert not failing, [c.claim for c in failing]
