@@ -62,7 +62,7 @@ Every quantitative claim in `output/paper.md` is listed with the file it should 
 | 4.6 | response budget published 18 August | `data/sources.csv` | 2026-08-18 | 2026-08-18 | ok |
 | 4.6 | monitoring post of March 2026 | `data/sources.csv` | 2026-03-19 | 2026-03-19 | ok |
 | 4.3 | RubyGems incident disclosed 11 September | `data/sources.csv` | 2026-09-11 | 2026-09-11 | ok |
-| 1 | nineteen days after the most detailed public timeline reconstruction | `data/sources.csv` | 19 | 19 | ok |
-| 1 | the reconstruction was built from the Black Hat talk | `data/sources.csv` | True | True | ok |
-| Abstract | abstract is 149 words, unedited | `paper-text.md` | 149 | 149 | ok |
+| 1 | three weeks after the Black Hat presentation | `data/sources.csv` | 21 | 21 | ok |
+| 1 | the Black Hat talk predates the appendix | `data/sources.csv` | True | True | ok |
+| Abstract | abstract is exactly 150 words | `paper-text.md` | 150 | 150 | ok |
 | throughout | writing rule: no bare P, only P_wall and P_exp | `output/paper.md` | 0 | 0 | ok |

@@ -185,17 +185,20 @@ def test_framework_count_in_the_paper_matches_the_register() -> None:
     assert len(frameworks) == 11, len(frameworks)
 
 
-def test_nineteen_day_gap_is_computable_from_the_register() -> None:
-    """§1 says nineteen days; both dates must be in sources.csv."""
+def test_three_week_gap_is_computable_from_the_register() -> None:
+    """§1 says three weeks after the Black Hat presentation; both dates are in the register.
+
+    No author is named for the earlier account, because the register does not
+    support one.
+    """
     import datetime
 
     text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
-    assert "nineteen days after the most detailed public timeline reconstruction" in text
+    assert "three weeks after the Black Hat presentation" in text
     by_key = {r["key"]: r for r in read_csv("sources.csv")}
     assert by_key["P1"]["date"] == "2026-08-26"
-    assert by_key["P23"]["date"].startswith("2026-08-07")
-    gap = datetime.date(2026, 8, 26) - datetime.date(2026, 8, 7)
-    assert gap.days == 19
+    assert by_key["P4"]["date"].startswith("2026-08-05")
+    assert (datetime.date(2026, 8, 26) - datetime.date(2026, 8, 5)).days == 21
 
 
 # --- the submission document ------------------------------------------------
