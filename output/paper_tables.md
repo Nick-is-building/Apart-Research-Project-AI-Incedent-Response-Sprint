@@ -154,7 +154,33 @@ No term count exists for these in the evidence base. Their gap is stated qualita
 
 ---
 
-## Table 5 — Contradiction register
+## Table 5 — The proposed control, in AICM column format
+
+Parsed from [`docs/clause-ais-13-m.md`](../docs/clause-ais-13-m.md) §2, not transcribed, so this table cannot drift from the clause text. The clause extends an existing control rather than adding one: AIS-13 already requires an inventory and a completeness check — of *components* that execute, not of *mechanisms* by which a capability is realised.
+
+| Field | Value |
+|---|---|
+| Control Domain | Application & Interface Security |
+| Control Title | Capability Mechanism Inventory and Protection-Time Budget |
+| Control ID | AIS-13.M |
+| Control Type | AI-Specific |
+| Cloud/AI Processing Infrastructure (PI) | Shared Cloud Service Provider–Model Provider (Shared CSP-MP) |
+| Model | Owned by the Model Provider (MP) |
+| Orchestrated Services | Shared Orchestrated Service Provider–Application Provider (Shared OSP-AP) |
+| Application | Shared Application Provider–AI Customer (Shared AP-AIC) |
+| Architectural relevance | Phys ✓ · Network ✓ · Compute ✓ · Storage ✓ · App ✓ · Data ✓ |
+| Lifecycle relevance | Preparation: Resource provisioning · Development: Guardrails · **Evaluation/Validation: Evaluation, Validation/Red Teaming, Re-evaluation** · Deployment: Orchestration · Delivery: Operations, Continuous monitoring |
+| Threat categories | Model manipulation ✓ · Sensitive data disclosure ✓ · Insecure supply chain ✓ · Insecure apps/plugins ✓ · Loss of governance/compliance ✓ |
+
+**Control Specification**
+
+> Maintain, for each capability that a containment control is credited with blocking, an inventory of the mechanisms through which that capability can be realised; document the method by which the inventory was derived and justify its coverage; and where the control does not **eliminate** the capability, declare a protection-time budget for the control and re-verify it at an interval shorter than that budget.
+
+Full text, including the implementation and auditing guidelines, the mapping and the scope limits, is in `docs/clause-ais-13-m.md`.
+
+---
+
+## Table 6 — Contradiction register
 
 9 documented contradictions, **6 of them intra-document** — inside a single document. Detecting these is itself part of the result, not noise around it. Full claims for each row are in `data/contradictions.csv`.
 

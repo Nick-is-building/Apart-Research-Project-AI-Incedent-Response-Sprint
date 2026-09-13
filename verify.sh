@@ -157,6 +157,22 @@ step "Generating the paper tables"
 "$PYTHON" src/paper_tables.py --quiet
 ok "output/paper_tables.md"
 
+step "Assembling the paper"
+"$PYTHON" src/assemble_paper.py --quiet
+ok "output/paper.md"
+
+step "Tracing the paper's claims back to the data"
+"$PYTHON" src/check_claims.py --quiet
+CLAIMS_LINE="$("$PYTHON" - <<'PY'
+import re
+from pathlib import Path
+text = Path("output/paper_claims_check.md").read_text(encoding="utf-8")
+m = re.search(r"\*\*(\d+) of (\d+) claims reproduce\.\*\*", text)
+print(f"{m.group(1)}/{m.group(2)}" if m else "unknown")
+PY
+)"
+ok "output/paper_claims_check.md ($CLAIMS_LINE claims reproduce)"
+
 # --- 2. the test suite ------------------------------------------------------
 step "Running the test suite"
 TEST_OUTPUT="$("$PYTHON" -m pytest tests/ -q 2>&1)" && TEST_STATUS=0 || TEST_STATUS=1
@@ -181,6 +197,8 @@ EXPECTED=(
   output/sensitivity_report.txt
   output/budgets_report.txt
   output/paper_tables.md
+  output/paper.md
+  output/paper_claims_check.md
 )
 if [[ $FAST -eq 0 ]]; then
   for stem in figure_1_timeline figure_2_cadence figure_3_states figure_4_awareness_clock; do
@@ -198,6 +216,7 @@ for path in "${EXPECTED[@]}"; do
 done
 log "$(printf '%-52s %s' "no type-C row carries a P_wall" "$TYPE_C_STATUS")"
 log "$(printf '%-52s %s' "expected outputs present (${#EXPECTED[@]})" "$([[ $MISSING_OUTPUTS -eq 0 ]] && echo PASS || echo FAIL)")"
+log "$(printf '%-52s %s' "paper claims reproducing" "$CLAIMS_LINE")"
 log "$(printf '%-52s %s' "instruments with a containment time axis" "$("$PYTHON" -c "
 import csv
 rows = list(csv.DictReader(open('data/instruments.csv', encoding='utf-8')))

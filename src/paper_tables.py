@@ -23,6 +23,7 @@ import budgets  # noqa: E402
 import compute_p  # noqa: E402
 
 DATA = REPO_ROOT / "data"
+CLAUSE_MD = REPO_ROOT / "docs" / "clause-ais-13-m.md"
 OUTPUT_MD = REPO_ROOT / "output" / "paper_tables.md"
 
 ROW_TYPE_LABEL = {
@@ -309,7 +310,66 @@ def table_instruments() -> list[str]:
     return out
 
 
-# --- Table 5: the contradiction register -----------------------------------
+# --- Table 5: the proposed control row -------------------------------------
+
+def parse_clause_control_row() -> tuple[list[tuple[str, str]], str]:
+    """Read the AICM control row and specification out of the clause document.
+
+    Parsed rather than transcribed, so the paper table cannot drift from the
+    clause text it is supposed to reproduce.
+    """
+    text = CLAUSE_MD.read_text(encoding="utf-8")
+    start = text.index("## 2. Control row (AICM format)")
+    end = text.index("### Control Specification")
+
+    fields: list[tuple[str, str]] = []
+    for line in text[start:end].splitlines():
+        line = line.strip()
+        if not line.startswith("|") or line.startswith("|---"):
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) != 2 or cells[0] == "Field":
+            continue
+        fields.append((cells[0].strip("*"), cells[1]))
+
+    spec_block = text[end:text.index("**Elimination, defined.**")]
+    specification = " ".join(
+        line.lstrip("> ").strip()
+        for line in spec_block.splitlines()
+        if line.strip().startswith(">")
+    ).strip()
+
+    if not fields or not specification:
+        raise ValueError("could not parse the control row out of the clause document")
+    return fields, specification
+
+
+def table_control_row() -> list[str]:
+    fields, specification = parse_clause_control_row()
+    out = [
+        "## Table 5 — The proposed control, in AICM column format",
+        "",
+        "Parsed from [`docs/clause-ais-13-m.md`](../docs/clause-ais-13-m.md) §2, not "
+        "transcribed, so this table cannot drift from the clause text. The clause extends an "
+        "existing control rather than adding one: AIS-13 already requires an inventory and a "
+        "completeness check — of *components* that execute, not of *mechanisms* by which a "
+        "capability is realised.",
+        "",
+    ]
+    out += table(["Field", "Value"], [[name, value] for name, value in fields])
+    out += [
+        "",
+        "**Control Specification**",
+        "",
+        "> " + specification,
+        "",
+        "Full text, including the implementation and auditing guidelines, the mapping and the "
+        "scope limits, is in `docs/clause-ais-13-m.md`.",
+    ]
+    return out
+
+
+# --- Table 6: the contradiction register -----------------------------------
 
 def table_contradictions() -> list[str]:
     rows = read("contradictions.csv")
@@ -328,7 +388,7 @@ def table_contradictions() -> list[str]:
 
     intra = sum(1 for r in rows if r["intra_document"] == "TRUE")
     out = [
-        "## Table 5 — Contradiction register",
+        "## Table 6 — Contradiction register",
         "",
         f"{len(rows)} documented contradictions, **{intra} of them intra-document** — inside a "
         "single document. Detecting these is itself part of the result, not noise around it. "
@@ -368,7 +428,7 @@ def build() -> str:
         "",
     ]
     for block in (table_clock(rows), table_corpus(rows), table_budgets(rows),
-                  table_instruments(), table_contradictions()):
+                  table_instruments(), table_control_row(), table_contradictions()):
         out += block
         out += ["", "---", ""]
     return "\n".join(out).rstrip() + "\n"

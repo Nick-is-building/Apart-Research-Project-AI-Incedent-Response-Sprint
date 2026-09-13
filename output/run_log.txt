@@ -1,9 +1,9 @@
 protection-time verification run log
 ====================================
 
-timestamp (UTC)   2026-09-13T02:56:58Z
-git SHA           3407bfdffe8248606e39e8e3439f19f4505c1172
-working tree      8 uncommitted file(s)
+timestamp (UTC)   2026-09-13T05:52:01Z
+git SHA           692c48c3e03e8eb3186c51cb7aeea2442cdb0bf5
+working tree      17 uncommitted file(s)
 python            Python 3.11.15
 platform          Linux 6.18.44-fc-v24 x86_64
 mode              full
@@ -22,9 +22,10 @@ A3   175 h 30 min   175 h 30 min   PASS
 
 Other invariants
 ----------------
-test suite (74 passed)                               PASS
+test suite (89 passed)                               PASS
 no type-C row carries a P_wall                       PASS
-expected outputs present (12)                        PASS
+expected outputs present (14)                        PASS
+paper claims reproducing                             52/55
 instruments with a containment time axis             0 (expected 0)
 
 VERDICT  VERIFIED - all reference values reproduce and every check passed.
