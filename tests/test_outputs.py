@@ -161,3 +161,108 @@ def test_writing_rule_holds_in_the_documents() -> None:
         stripped = re.sub(r"`[^`]*`", "", stripped)
         offenders = re.findall(r"(?<![\w_])P(?![\w_])", stripped)
         assert not offenders, f"{name}: {len(offenders)} bare 'P' occurrence(s)"
+
+
+# --- the submission template record ----------------------------------------
+
+def test_paper_template_records_the_requirements_verbatim() -> None:
+    text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
+    for anchor in (
+        "150 words or fewer",
+        "Limitations and Dual-Use / Ethical appendix",
+        "Research report (PDF) using the official template",
+        "3 to 5 minute video demo",
+        "not a product demo",
+    ):
+        assert anchor in text, anchor
+
+
+def test_paper_template_does_not_invent_a_structure() -> None:
+    """The template has not been read; the file must keep saying so.
+
+    A plausible-looking reconstruction would be indistinguishable from the real
+    thing to a later reader, so the absence has to stay loud until the actual
+    template is in the repository and recorded from it.
+    """
+    text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
+    assert "PENDING" in text
+    assert "Not recorded" in text
+    assert "nothing here describes it" in text
+
+
+# --- the assembled paper ----------------------------------------------------
+
+def test_every_generation_marker_is_filled() -> None:
+    """No [Claude Code: ...] marker may survive into the assembled paper."""
+    import assemble_paper
+
+    text, filled, placed = assemble_paper.build()
+    assert len(filled) == 6, filled
+    assert not assemble_paper.MARKER.search(text)
+
+
+def test_abstract_is_exactly_149_words_and_unedited() -> None:
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    abstract = text[text.index("## Abstract"):text.index("## 1. Introduction")]
+    body = abstract.split("---")[0].replace("## Abstract", "").strip()
+    assert len(body.split()) == 149
+
+    source = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert body in source, "the abstract was altered during assembly"
+
+
+def test_all_four_figures_are_placed_where_the_text_supports_them() -> None:
+    import assemble_paper
+
+    text, _, placed = assemble_paper.build()
+    assert len(placed) == 4
+    assert "### 4.1 Three protection times, verified to the minute" in placed
+    assert any(s.startswith("### 4.6") for s in placed)
+
+    # Figure 1 with 4.1 and Figure 4 with 4.6, as specified.
+    for figure, section in (("**Figure 1.**", "### 4.1"), ("**Figure 4.**", "### 4.6")):
+        heading = text.rindex(section, 0, text.index(figure))
+        between = text[heading:text.index(figure)]
+        assert "\n### " not in between[len(section):], f"{figure} drifted out of {section}"
+
+
+def test_paper_prose_is_copied_through_unchanged() -> None:
+    """The assembler fills markers and places figures. It does not rewrite prose."""
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    source = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    for paragraph in (
+        "All three controls were bypassed; none was broken",
+        "The apparatus is built around the model as an asset to protect, not as an actor to bound.",
+        "This is n = 1.",
+    ):
+        assert paragraph in source and paragraph in text, paragraph
+
+
+def test_paper_carries_no_bare_p() -> None:
+    import re
+
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    stripped = re.sub(r"```.*?```", "", text, flags=re.S)
+    stripped = re.sub(r"`[^`]*`", "", stripped)
+    stripped = re.sub(r"\bP\d+\b", "", stripped)
+    offenders = re.findall(r"(?<![\w_])P(?![\w_])", stripped)
+    assert not offenders, f"{len(offenders)} bare 'P' occurrence(s) in the paper"
+
+
+def test_claims_check_reports_rather_than_reconciles() -> None:
+    """Claims that disagree with the data must be surfaced, not quietly fixed."""
+    import check_claims
+
+    claims = check_claims.collect()
+    assert len(claims) >= 50
+    failing = [c for c in claims if c.status != check_claims.OK]
+    # The three known disagreements are expected to be present and reported.
+    assert len(failing) == 3, [c.claim for c in failing]
+    for c in failing:
+        assert c.note, f"{c.claim}: a non-reproducing claim must carry a note"
