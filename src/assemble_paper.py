@@ -53,15 +53,66 @@ def demote(markdown: str, levels: int = 2) -> str:
 
 # --- Appendix A: the clause, sections 2 to 7 --------------------------------
 
-def appendix_a() -> str:
+def clause_lead_sentences(prefix: str) -> list[tuple[str, str]]:
+    """Pull the bolded lead sentence of each numbered duty or audit step.
+
+    Selection, not paraphrase: every line returned already exists in
+    docs/clause-ais-13-m.md, verbatim.
+    """
     text = (DOCS / "clause-ais-13-m.md").read_text(encoding="utf-8")
-    body = text[text.index("## 2. Control row (AICM format)"):].rstrip()
-    header = (
-        "*Inserted verbatim from `docs/clause-ais-13-m.md`, sections 2 through 7. "
-        "Section 1, the design rationale, is omitted: it restates the argument of "
-        "Section 5 above.*\n\n"
+    out: list[tuple[str, str]] = []
+    pattern = re.compile(
+        rf"^\*\*({re.escape(prefix)}\.\d+(?:\.\d+)?) ([^*]+?)\*\*(.*)$", re.M
     )
-    return header + demote(body, levels=1)
+    for match in pattern.finditer(text):
+        number, title, tail = match.groups()
+        title = title.strip()
+        if not title.endswith("."):
+            title = (title + " " + tail.split(".")[0]).strip() + "."
+        out.append((number, title))
+    return out
+
+
+def appendix_a() -> str:
+    _, specification = None, None
+    text = (DOCS / "clause-ais-13-m.md").read_text(encoding="utf-8")
+    spec_block = text[text.index("### Control Specification"):text.index("**Elimination, defined.**")]
+    specification = " ".join(
+        line.lstrip("> ").strip() for line in spec_block.splitlines()
+        if line.strip().startswith(">")
+    ).strip()
+
+    out = [
+        "*Condensed. Full normative text, including the AICM control row, the mapping table and "
+        "the cost section, is in `docs/clause-ais-13-m.md`; the control row is also Table 5 of "
+        "`output/paper_tables.md`.*",
+        "",
+        "**AIS-13.M — Capability Mechanism Inventory and Protection-Time Budget.** Proposed "
+        "extension to CSA AI Controls Matrix v1.1.1, domain Application & Interface Security.",
+        "",
+        "**Control Specification**",
+        "",
+        "> " + specification,
+        "",
+        "**Implementation — operator of the execution environment**",
+        "",
+    ]
+    out += [f"- **{n}** {t}" for n, t in clause_lead_sentences("3")]
+    out += [
+        "",
+        "**Audit — assessable from documents alone, without network access**",
+        "",
+    ]
+    out += [f"- **{n}** {t}" for n, t in clause_lead_sentences("4")]
+    out += [
+        "",
+        "Elimination is defined narrowly: a control eliminates a capability only where the "
+        "interface or execution substrate required to produce the outcome is structurally absent "
+        "from the execution environment. Restricting, filtering or removing a particular means of "
+        "invocation is not elimination; it removes one mechanism from the inventory. A capability "
+        "resident in model weights cannot be eliminated by any control applied to the environment.",
+    ]
+    return "\n".join(out)
 
 
 # --- Appendix B: the contradiction register ---------------------------------
@@ -74,30 +125,62 @@ def appendix_b() -> str:
     out = [
         f"*Generated from `data/contradictions.csv`. {len(rows)} documented contradictions, "
         f"{intra} of them intra-document — inside a single document. "
-        f"{', '.join(main)} are discussed in the main text; all {len(rows)} are carried here.*",
+        f"{', '.join(main)} are discussed in the main text. The quoted claims on both sides of "
+        f"each row are in the data file.*",
         "",
+        "| | Contradiction | Intra-doc | Resolving question |",
+        "|---|---|---|---|",
     ]
     for row in rows:
-        out.append(f"**{row['id']} — {row['short_title']}**"
-                   + ("  ·  *main text*" if row["in_paper_main_text"] == "TRUE" else ""))
-        out.append("")
-        kind = "intra-document" if row["intra_document"] == "TRUE" else "between documents"
-        out.append(f"*{kind}; status {row['status']}*")
-        out.append("")
-        out.append(f"- **{escape(row['source_a'])}:** {escape(row['claim_a'])}")
-        out.append(f"- **{escape(row['source_b'])}:** {escape(row['claim_b'])}")
-        out.append(f"- **Resolving question:** {escape(row['resolving_question'])}")
-        out.append("")
-    return "\n".join(out).rstrip()
+        out.append(
+            f"| {row['id']} | {escape(row['short_title'])} "
+            f"| {'yes' if row['intra_document'] == 'TRUE' else 'no'} "
+            f"| {escape(row['resolving_question'])} |"
+        )
+    return "\n".join(out)
 
 
 # --- Appendix C: extended limitations ---------------------------------------
 
-def appendix_c() -> str:
+def limitation_paragraphs() -> list[tuple[str, str]]:
+    """Heading plus the first substantive paragraph of each limitation.
+
+    Selection, not paraphrase: each paragraph is taken whole from
+    docs/limitations.md.
+    """
     text = (DOCS / "limitations.md").read_text(encoding="utf-8")
-    body = text[text.index("\n", text.index("# Limitations")):].strip()
-    header = "*Inserted from `docs/limitations.md`.*\n\n"
-    return header + demote(body, levels=1)
+    sections = re.split(r"^## ", text, flags=re.M)[1:]
+    out: list[tuple[str, str]] = []
+    for section in sections:
+        heading, _, body = section.partition("\n")
+        heading = heading.strip()
+        if not re.match(r"^\d+\.", heading):
+            continue
+        for block in body.split("\n\n"):
+            block = " ".join(block.split()).strip()
+            if len(block) > 80 and not block.startswith(("**Check it:**", "|", "-", "    ")):
+                out.append((heading, block))
+                break
+    return out
+
+
+def appendix_c() -> str:
+    paragraphs = limitation_paragraphs()
+    out = [
+        f"*Condensed from `docs/limitations.md`, which carries all {len(paragraphs)} in full "
+        "along with a section on what would change the result. One paragraph each, taken "
+        "whole.*",
+        "",
+    ]
+    for heading, paragraph in paragraphs:
+        out += [f"**{heading}**", "", paragraph, ""]
+    out += [
+        "If you are looking for a single sentence to attack, use this one: this is n = 1, and "
+        "the one public case where a containment control was actually defeated is also the only "
+        "case where the underlying transcripts are known to contain deliberately spoofed tool "
+        "calls.",
+    ]
+    return "\n".join(out)
 
 
 # --- Appendix E: what did not work ------------------------------------------
@@ -108,11 +191,9 @@ CORRECTIONS = [
     (
         "The rebuild date, which would have moved all three values by two days",
         "OpenAI's blog post of 26 August dates the Artifactory rebuild to 8 July. Its own "
-        "technical report dates it to 2026-07-06 01:16 UTC, and three further sources agree: "
-        "the report's narrative section, the Black Hat transcript in which an OpenAI engineer "
-        "says \"The date at this point is July 6\", and METR's chronology. Taking the blog "
-        "post's date would have shortened every protection time in this paper by 48 hours. "
-        "Carried as W-8, resolved against the blog post.",
+        "technical report dates it to 2026-07-06 01:16 UTC, and three further sources agree. "
+        "Taking the blog post's date would have shortened every protection time in this paper "
+        "by 48 hours.",
         "Where two artefacts from the same organisation on the same day disagree, the one with "
         "the timestamped appendix wins, and the disagreement is recorded rather than silently "
         "resolved.",
@@ -120,28 +201,23 @@ CORRECTIONS = [
     (
         "A false absence claim caused by date formatting",
         "We asserted that 20 April does not appear in the technical report. It does, as the "
-        "first row of the event table: `2026-04-20 07:59 UTC`. The search had been run for "
-        "\"April\" against a document that uses ISO dates.",
-        "A negative finding is only as good as the search terms. Every \"does not appear\" "
-        "claim was re-run across spellings and formats, and the second pass over the METR "
-        "investigation was carried out for this reason.",
+        "first row of the event table. The search had been run for \"April\" against a document "
+        "that uses ISO dates.",
+        "A negative finding is only as good as the search terms. Every \"does not appear\" claim "
+        "was re-run across spellings and formats.",
     ),
     (
         "Two register lines recommended for deletion that were genuine",
-        "We twice proposed dropping a contradiction as resolvable. The ChatGPT/Codex harness "
-        "attribution (W-3) appears in two places in the same report about five pages apart, "
-        "and the transcript-integrity conflict (W-4) is a direct clash between OpenAI's "
-        "blanket statement and METR's counts. Both are real and both remain in the register.",
+        "We twice proposed dropping a contradiction as resolvable. Both are real and both remain "
+        "in the register.",
         "The error direction was constant across the project: over-confident resolution, never "
         "invention. That asymmetry is itself a finding about how this material fails.",
     ),
     (
         "Two rows reclassified from applied to standing, removing a row type",
         "The outbound network controls and the Artifactory image-cache integrity handling were "
-        "first recorded as controls applied on 9 July. That was wrong: 9 July is when the "
-        "event occurred, not when the control was applied, and both were already standing. "
-        "They moved from B1 and B2 to C15 and C16, and the row type \"applied, not nested\" "
-        "became empty.",
+        "first recorded as controls applied on 9 July. That was wrong: 9 July is when the event "
+        "occurred, not when the control was applied, and both were already standing.",
         "This produced the finding in Section 3: the entire public record contains exactly one "
         "control-application event. The correction did not weaken the result, it produced it.",
     ),

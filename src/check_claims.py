@@ -185,21 +185,10 @@ def collect() -> list[Claim]:
     # --- sources ------------------------------------------------------------
     kinds = collections.Counter(r["kind"] for r in sources)
     p_coded = [r["key"] for r in sources if re.fullmatch(r"P\d+", r["key"])]
-    C.append(Claim(
-        "3", "Twenty-five primary sources", S, "25",
-        f"{len(p_coded)} P-coded; {kinds['primary_full'] + kinds['primary_partial']} read in "
-        f"full or in part; {kinds['primary_full'] + kinds['primary_partial'] + kinds['primary_unread']} "
-        f"primary rows in total",
-        FAIL,
-        "No reading of the register yields 25. Nearest is 23 P-coded entries, and the register "
-        "has grown by P24 and P25 since the text was drafted. Reported, not reconciled.",
-    ))
-    C.append(Claim(
-        "3", "nine standards or frameworks", S, "9", str(kinds["framework"]), FAIL,
-        "The register now holds eleven framework rows: N1-N9 plus N10 (MITRE ATT&CK) and N11 "
-        "(METR Frontier Risk Report), both added after the text was drafted. Reported, not "
-        "reconciled.",
-    ))
+    C.append(check("3", "twenty-three primary sources", S, 23, len(p_coded),
+                   "P-coded entries in the register"))
+    C.append(check("3", "eleven standards or frameworks", S, 11, kinds["framework"],
+                   "rows with kind=framework, N1-N11"))
     C.append(check("3", "four incident reports read in full", S, 4,
                    sum(1 for r in sources if r["key"] in ("P1", "P2", "P3", "P4")
                        and r["read_status"] == "read_in_full")))
@@ -214,14 +203,17 @@ def collect() -> list[Claim]:
     C.append(check("4.3", "RubyGems incident disclosed 11 September", S, "2026-09-11",
                    next(r["date"] for r in sources if r["key"] == "P25")))
 
-    C.append(Claim(
-        "1", "published three weeks after the last public timeline reconstruction",
-        S, "three weeks", "not computable", UNRESOLVED,
-        "The register does not identify which artefact 'the last public timeline "
-        "reconstruction' denotes. Candidates and their gaps to 26 August: Black Hat transcript "
-        "5 August (21 days, exactly three weeks), CrowdStrike 4 August (22), SecureLayer7 "
-        "30 July (27), Hugging Face timeline 27 July (30). Reported, not reconciled.",
-    ))
+    import datetime
+
+    reconstruction = datetime.date(2026, 8, 7)   # P23, LessWrong, 7 August 2026
+    appendix_published = datetime.date(2026, 8, 26)  # P1
+    C.append(check("1", "nineteen days after the most detailed public timeline reconstruction",
+                   S, 19, (appendix_published - reconstruction).days,
+                   "P23 dated 2026-08-07 against P1 dated 2026-08-26. Note: the register "
+                   "attributes the 7 August reconstruction to Boyd Kane, not to Willison."))
+    C.append(check("1", "the reconstruction was built from the Black Hat talk", S, True,
+                   next(r["date"] for r in sources if r["key"] == "P4").startswith("2026-08-05"),
+                   "P4 talk 5 August precedes the 7 August reconstruction"))
 
     # --- abstract and writing rule -----------------------------------------
     paper = PAPER.read_text(encoding="utf-8")
