@@ -2,7 +2,7 @@
 
 **Generated file — do not edit by hand.** Every figure in it is read from `data/` or computed by `src/`. Regenerate with `python3 src/paper_tables.py`, or run `./verify.sh` to rebuild the whole pipeline and check the reference values.
 
-Generated 2026-09-12. Sources are cited by the short codes registered in `data/sources.csv`; the full evidence base is `docs/belegbasis-v3.md`.
+Generated 2026-09-13. Sources are cited by the short codes registered in `data/sources.csv`; the full evidence base is `docs/belegbasis-v3.md`.
 
 **Notation:** always `P_wall` (calendar time) or `P_exp` (agent exposure time), never a bare `P` — in the security and verification literature `P` regularly denotes a probability.
 

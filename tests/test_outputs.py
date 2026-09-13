@@ -161,3 +161,29 @@ def test_writing_rule_holds_in_the_documents() -> None:
         stripped = re.sub(r"`[^`]*`", "", stripped)
         offenders = re.findall(r"(?<![\w_])P(?![\w_])", stripped)
         assert not offenders, f"{name}: {len(offenders)} bare 'P' occurrence(s)"
+
+
+# --- the submission template record ----------------------------------------
+
+def test_paper_template_records_the_requirements_verbatim() -> None:
+    text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
+    for anchor in (
+        "150 words or fewer",
+        "Limitations and Dual-Use / Ethical appendix",
+        "Research report (PDF) using the official template",
+        "3 to 5 minute video demo",
+        "not a product demo",
+    ):
+        assert anchor in text, anchor
+
+
+def test_paper_template_does_not_invent_a_structure() -> None:
+    """The template was not retrievable; the file must keep saying so.
+
+    A plausible-looking reconstruction would be indistinguishable from the real
+    thing to a later reader, so the absence has to stay loud.
+    """
+    text = (REPO_ROOT / "docs" / "paper-template.md").read_text(encoding="utf-8")
+    assert "NOT RETRIEVED" in text
+    assert "EGRESS_BLOCKED" in text
+    assert "left blank on purpose" in text
