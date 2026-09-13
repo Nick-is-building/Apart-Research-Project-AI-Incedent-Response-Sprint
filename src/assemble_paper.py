@@ -291,6 +291,52 @@ def appendix_f() -> str:
     return "\n".join(out)
 
 
+# --- Appendix G: the nesting argument ---------------------------------------
+
+def appendix_g() -> str:
+    report = (REPO_ROOT / "output" / "sensitivity_report.txt").read_text(encoding="utf-8")
+    draws = re.search(r"draws:\s+([\d,]+)", report)
+    families = re.search(r"duty-cycle families:\s+(\d+)", report)
+    held = re.search(r"held in: ([\d.]+%) of draws", report)
+    threshold = re.search(r"=\s+([\d.]+) \* alpha", report)
+
+    return "\n".join([
+        "*Generated from `src/sensitivity.py`; the full run is "
+        "`output/sensitivity_report.txt`.*",
+        "",
+        "If exposure-normalised protection time is the integral of agent execution activity "
+        "over each interval, and that activity is nowhere negative, the ordering is preserved "
+        "for every possible duty-cycle function, not only for constant ones. The integral of a "
+        "non-negative function over a set cannot exceed its integral over a superset, so the "
+        "result needs no data about when workloads ran.",
+        "",
+        f"A Monte Carlo demonstration over {draws.group(1)} draws across "
+        f"{families.group(1)} deliberately ill-behaved non-negative duty-cycle families — "
+        "including one that crams all activity into the tail, after the two shorter intervals "
+        f"have ended — reproduces the ordering in {held.group(1)} of draws. That is an "
+        "illustration of a deductive result, not evidence for it.",
+        "",
+        "Three limitations travel with it. Only the ordering is settled; the magnitude does "
+        "not follow and is not claimed. The result holds for exactly the three rows sharing "
+        "the 6 July rebuild. And the nesting breaks for any row with a different application "
+        f"time: a per-control model would wrongly permit a rank reversal below "
+        f"{threshold.group(1)} times the egress coefficient, a region nesting makes empty.",
+    ])
+
+
+# --- Appendix H: supporting figures -----------------------------------------
+
+def appendix_h() -> str:
+    return "\n\n".join([
+        "![Figure 2](figure_2_cadence.png)",
+        "**Figure 2.** Prescribed review cadence against measured hold time, log axis. "
+        "Source: `output/figure_2_cadence.pdf`.",
+        "![Figure 3](figure_3_states.png)",
+        "**Figure 3.** Control state by row type across the 22-row clock. Type B is defined in "
+        "the schema and empty in the corpus. Source: `output/figure_3_states.pdf`.",
+    ])
+
+
 # --- References -------------------------------------------------------------
 
 # The main text carries [1]-[6] by hand; these continue the list. Each entry
@@ -333,35 +379,22 @@ def references() -> str:
 
 FIGURES = {
     "### 4.1 Three protection times, verified to the minute": (
-        "after_block",
         "![Figure 1](figure_1_timeline.png)\n\n"
         "**Figure 1.** Protection time of the three controls applied at the Artifactory "
         "rebuild. All three intervals share one start point, so they are nested: "
         "[t₀,A1] ⊂ [t₀,A2] ⊂ [t₀,A3]. The dashed drop lines mark where the shorter intervals "
-        "end inside the longer ones. Source: `output/figure_1_timeline.pdf`.",
+        "end inside the longer ones. Source: `output/figure_1_timeline.pdf`."
     ),
-    "### 4.5 The required re-verification cadence exceeds the measured hold times by two orders of magnitude": (
-        "after_block",
-        "![Figure 2](figure_2_cadence.png)\n\n"
-        "**Figure 2.** Prescribed review cadence against measured hold time, log axis. "
-        "Source: `output/figure_2_cadence.pdf`.",
-    ),
-    "### 4.7 No instrument records how long a control holds": (
-        "after_block",
-        "![Figure 3](figure_3_states.png)\n\n"
-        "**Figure 3.** Control state by row type across the 22-row clock. Type B is defined in "
-        "the schema and empty in the corpus. Source: `output/figure_3_states.pdf`.",
-    ),
-    "### 4.6 The declared response budget was exceeded by a factor of eleven": (
-        "after_block",
+    "### 4.5 The declared cadence and the declared response budget are both exceeded by the measured values": (
         "![Figure 4](figure_4_awareness_clock.png)\n\n"
         "**Figure 4.** The awareness clock: four readings of when OpenAI became aware, against "
         "the EU five-day and California fifteen-day thresholds. Measures the interval to public "
         "disclosure, which is a different quantity from the regulatory obligation. Three "
         "readings are primary, one secondary (hatched). Source: "
-        "`output/figure_4_awareness_clock.pdf`.",
+        "`output/figure_4_awareness_clock.pdf`."
     ),
 }
+# Figures 2 and 3 live in Appendix H, placed by appendix_h() rather than here.
 
 
 def place_figures(text: str) -> tuple[str, list[str]]:
@@ -378,8 +411,7 @@ def place_figures(text: str) -> tuple[str, list[str]]:
             pending = None
         out.append(line)
         if line.strip() in FIGURES:
-            _, caption = FIGURES[line.strip()]
-            pending = caption
+            pending = FIGURES[line.strip()]
             placed.append(line.strip())
     if pending:
         out += ["", pending, ""]
@@ -394,6 +426,8 @@ GENERATORS = [
     ("Appendix C", "limitations.md", appendix_c),
     ("Appendix E", "belegbasis-v3.md section 19", appendix_e),
     ("Appendix F", "generated table", appendix_f),
+    ("Appendix G", "sensitivity_report.txt", appendix_g),
+    ("Appendix H", "figures 2 and 3", appendix_h),
     ("References", "sources.csv", references),
 ]
 

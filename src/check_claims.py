@@ -205,22 +205,23 @@ def collect() -> list[Claim]:
 
     import datetime
 
-    reconstruction = datetime.date(2026, 8, 7)   # P23, LessWrong, 7 August 2026
+    black_hat = datetime.date(2026, 8, 5)            # P4, talk
     appendix_published = datetime.date(2026, 8, 26)  # P1
-    C.append(check("1", "nineteen days after the most detailed public timeline reconstruction",
-                   S, 19, (appendix_published - reconstruction).days,
-                   "P23 dated 2026-08-07 against P1 dated 2026-08-26. Note: the register "
-                   "attributes the 7 August reconstruction to Boyd Kane, not to Willison."))
-    C.append(check("1", "the reconstruction was built from the Black Hat talk", S, True,
-                   next(r["date"] for r in sources if r["key"] == "P4").startswith("2026-08-05"),
-                   "P4 talk 5 August precedes the 7 August reconstruction"))
+    C.append(check("1", "three weeks after the Black Hat presentation", S, 21,
+                   (appendix_published - black_hat).days,
+                   "P4 talk 2026-08-05 against P1 2026-08-26; no author is named because "
+                   "the register does not support one"))
+    C.append(check("1", "the Black Hat talk predates the appendix", S, True,
+                   next(r["date"] for r in sources if r["key"] == "P4").startswith("2026-08-05")))
 
     # --- abstract and writing rule -----------------------------------------
     paper = PAPER.read_text(encoding="utf-8")
     abstract = paper[paper.index("## Abstract"):paper.index("## 1. Introduction")]
     abstract_body = abstract.split("---")[0].replace("## Abstract", "").strip()
-    C.append(check("Abstract", "abstract is 149 words, unedited",
-                   "paper-text.md", 149, len(abstract_body.split())))
+    C.append(check("Abstract", "abstract is exactly 150 words",
+                   "paper-text.md", 150, len(abstract_body.split()),
+                   "satisfies both the requirement list (150 or fewer) and the template "
+                   "(150-250) at the single value where they overlap"))
 
     stripped = re.sub(r"```.*?```", "", paper, flags=re.S)
     stripped = re.sub(r"`[^`]*`", "", stripped)

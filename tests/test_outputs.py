@@ -204,35 +204,46 @@ def test_every_generation_marker_is_filled() -> None:
     import assemble_paper
 
     text, filled, placed = assemble_paper.build()
-    assert len(filled) == 6, filled
+    assert len(filled) == 8, filled
     assert not assemble_paper.MARKER.search(text)
 
 
-def test_abstract_is_exactly_149_words_and_unedited() -> None:
+def test_abstract_is_exactly_150_words() -> None:
     import assemble_paper
 
     text, _, _ = assemble_paper.build()
     abstract = text[text.index("## Abstract"):text.index("## 1. Introduction")]
     body = abstract.split("---")[0].replace("## Abstract", "").strip()
-    assert len(body.split()) == 149
+    # 150 is the one value satisfying both "150 or fewer" (requirement list)
+    # and "150-250 words" (template).
+    assert len(body.split()) == 150
 
     source = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
     assert body in source, "the abstract was altered during assembly"
 
 
-def test_all_four_figures_are_placed_where_the_text_supports_them() -> None:
+def test_two_figures_in_the_main_text_and_two_in_the_appendix() -> None:
+    """Figure 1 with 4.1 and Figure 4 with the merged 4.5; 2 and 3 in Appendix H."""
     import assemble_paper
 
     text, _, placed = assemble_paper.build()
-    assert len(placed) == 4
+    assert len(placed) == 2, placed
     assert "### 4.1 Three protection times, verified to the minute" in placed
-    assert any(s.startswith("### 4.6") for s in placed)
+    assert any(s.startswith("### 4.5") for s in placed)
 
-    # Figure 1 with 4.1 and Figure 4 with 4.6, as specified.
-    for figure, section in (("**Figure 1.**", "### 4.1"), ("**Figure 4.**", "### 4.6")):
+    for figure, section in (("**Figure 1.**", "### 4.1"), ("**Figure 4.**", "### 4.5")):
         heading = text.rindex(section, 0, text.index(figure))
         between = text[heading:text.index(figure)]
         assert "\n### " not in between[len(section):], f"{figure} drifted out of {section}"
+
+    appendix_h = text.index("## Appendix H.")
+    for figure in ("**Figure 2.**", "**Figure 3.**"):
+        assert text.index(figure) > appendix_h, f"{figure} is not in Appendix H"
+
+    # all four still ship as files
+    for stem in ("figure_1_timeline", "figure_2_cadence", "figure_3_states",
+                 "figure_4_awareness_clock"):
+        assert (REPO_ROOT / "output" / f"{stem}.png").exists()
 
 
 def test_paper_prose_is_copied_through_unchanged() -> None:
