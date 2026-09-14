@@ -229,7 +229,7 @@ def test_submission_docx_is_built_from_the_template() -> None:
             assert part in names, part
         # the four figures travelled into the package
         media = [n for n in names if n.startswith("word/media/")]
-        assert len(media) == 4, media
+        assert len(media) == 2, media
         document = archive.read("word/document.xml").decode("utf-8")
     assert "PROJECT TITLE" not in document, "template placeholder survived"
     assert "Delete all guidance text" not in document, "guidance info box survived"

@@ -46,6 +46,11 @@ import compute_p  # noqa: E402
 
 OUTPUT_DIR = REPO_ROOT / "output"
 
+# When true, figures are rendered without their in-image title and caption,
+# because the document they are placed in supplies both. Repeating them costs
+# roughly an inch of page height per figure and reads as a duplication.
+BARE = False
+
 # Validated categorical slots (light surface).
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]
 INK = "#0b0b0b"
@@ -93,6 +98,8 @@ def apply_print_style() -> None:
 
 def save(fig: plt.Figure, stem: str) -> list[Path]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    if BARE:
+        stem = f"{stem}_bare"
     written = []
     for suffix, kwargs in ((".png", {"dpi": 300}), (".pdf", {})):
         path = OUTPUT_DIR / f"{stem}{suffix}"
@@ -116,7 +123,7 @@ def finish(
     from the number of wrapped caption lines, and the two artists get disjoint
     bands inside it.
     """
-    lines = textwrap.wrap(caption_text, wrap_chars) or [""]
+    lines = [] if BARE else (textwrap.wrap(caption_text, wrap_chars) or [""])
     caption_height = 0.030 * len(lines)
     legend_height = 0.075 if legend_handles else 0.0
     bottom = 0.16 + caption_height + legend_height
@@ -133,8 +140,9 @@ def finish(
             columnspacing=1.6,
         )
 
-    fig.text(0.012, caption_height - 0.004, "\n".join(lines),
-             ha="left", va="top", fontsize=7, color=INK_MUTED, linespacing=1.5)
+    if lines:
+        fig.text(0.012, caption_height - 0.004, "\n".join(lines),
+                 ha="left", va="top", fontsize=7, color=INK_MUTED, linespacing=1.5)
 
 
 def load_rows() -> list[dict[str, str]]:
@@ -207,7 +215,7 @@ def figure_1(rows: list[dict[str, str]]) -> list[Path]:
     ax.xaxis.set_major_locator(mdates.DayLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
     ax.set_xlabel("2026, UTC")
-    ax.set_title("Figure 1   Protection time of the three controls applied at the rebuild", pad=26)
+    ax.set_title("" if BARE else "Figure 1   Protection time of the three controls applied at the rebuild", pad=26 if not BARE else 12)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
 
@@ -248,7 +256,7 @@ def figure_2(rows: list[dict[str, str]]) -> list[Path]:
     ax.set_yticklabels([names[r["id"]] for r in type_a], fontsize=8)
     ax.set_ylim(-0.6, len(type_a) - 0.4)
     ax.set_xlabel("hours (log scale)")
-    ax.set_title("Figure 2   Prescribed review cadence against measured hold time", pad=12)
+    ax.set_title("" if BARE else "Figure 2   Prescribed review cadence against measured hold time", pad=12)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
 
@@ -287,7 +295,7 @@ def figure_3(rows: list[dict[str, str]]) -> list[Path]:
     ax.invert_yaxis()
     ax.set_xlim(0, max(sum(c.values()) for c in counts.values()) + 2.4)
     ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
-    ax.set_title("Figure 3   Control state by row type", pad=12)
+    ax.set_title("" if BARE else "Figure 3   Control state by row type", pad=12)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
 
@@ -352,7 +360,7 @@ def figure_4() -> list[Path]:
     ax.set_ylim(-0.55, len(ordered) - 0.05)
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     ax.xaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(1))
-    ax.set_title("Figure 4   The awareness clock: four readings, two regulatory thresholds",
+    ax.set_title("" if BARE else "Figure 4   The awareness clock: four readings, two regulatory thresholds",
                  pad=18)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
@@ -378,8 +386,13 @@ def figure_4() -> list[Path]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--bare", action="store_true",
+                        help="omit in-image titles and captions, for figures placed in a "
+                             "document that supplies them")
     args = parser.parse_args(argv)
 
+    global BARE
+    BARE = args.bare
     apply_print_style()
     rows = load_rows()
 

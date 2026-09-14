@@ -165,6 +165,29 @@ step "Building the submission document from the official template"
 if [[ -f "Digital Minds Research Sprint submission template.docx" ]]; then
   "$PYTHON" src/build_submission.py --quiet
   ok "output/paper.docx"
+  mkdir -p paper
+  cp output/paper.docx paper/protection-time.docx
+  if command -v soffice >/dev/null 2>&1; then
+    rm -f output/paper.pdf
+    soffice --headless --convert-to pdf --outdir output output/paper.docx >/dev/null 2>&1 || true
+    if [[ -s output/paper.pdf ]]; then
+      cp output/paper.pdf paper/protection-time.pdf
+      PAGES="$("$PYTHON" - <<'PY'
+import re, pathlib
+d = pathlib.Path("output/paper.pdf").read_bytes()
+counts = [int(x) for x in re.findall(rb"/Count\s+(\d+)", d)]
+print(max(counts) if counts else "?")
+PY
+)"
+      ok "paper/protection-time.pdf ($PAGES pages)"
+    else
+      printf '    PDF conversion unavailable; .docx only\n'
+      PAGES="not measured"
+    fi
+  else
+    printf '    LibreOffice not installed; .docx only\n'
+    PAGES="not measured"
+  fi
 else
   printf '    skipped (template not present)\n'
 fi
@@ -208,6 +231,7 @@ EXPECTED=(
   output/paper.md
   output/paper_claims_check.md
   output/paper.docx
+  paper/protection-time.docx
 )
 if [[ $FAST -eq 0 ]]; then
   for stem in figure_1_timeline figure_2_cadence figure_3_states figure_4_awareness_clock; do
@@ -226,6 +250,7 @@ done
 log "$(printf '%-52s %s' "no type-C row carries a P_wall" "$TYPE_C_STATUS")"
 log "$(printf '%-52s %s' "expected outputs present (${#EXPECTED[@]})" "$([[ $MISSING_OUTPUTS -eq 0 ]] && echo PASS || echo FAIL)")"
 log "$(printf '%-52s %s' "paper claims reproducing" "$CLAIMS_LINE")"
+log "$(printf '%-52s %s' "submission PDF pages" "${PAGES:-not built}")"
 log "$(printf '%-52s %s' "instruments with a containment time axis" "$("$PYTHON" -c "
 import csv
 rows = list(csv.DictReader(open('data/instruments.csv', encoding='utf-8')))

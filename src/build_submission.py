@@ -79,17 +79,30 @@ def quote(text: str) -> str:
     return f'<w:p><w:pPr>{extra}</w:pPr>{runs("*" + text + "*")}</w:p>'
 
 
+def column_weights(rows: list[list[str]], columns: int) -> list[float]:
+    """Share the table width by how much text each column actually carries.
+
+    Equal columns waste most of a page when one column holds a sentence and
+    another holds "yes". Weights are clamped so no column collapses.
+    """
+    longest = [max((len(r[c]) for r in rows if c < len(r)), default=1) for c in range(columns)]
+    clamped = [max(4.0, min(float(v), 90.0)) for v in longest]
+    total = sum(clamped)
+    return [v / total for v in clamped]
+
+
 def table(rows: list[list[str]]) -> str:
     if not rows:
         return ""
     columns = max(len(r) for r in rows)
     width = 9360  # 6.5in in DXA
-    each = width // columns
+    weights = column_weights(rows, columns)
+    widths = [max(500, int(width * w)) for w in weights]
     borders = ("<w:tblBorders>"
                + "".join(f'<w:{e} w:val="single" w:sz="4" w:color="BFBFBF"/>'
                          for e in ("top", "left", "bottom", "right", "insideH", "insideV"))
                + "</w:tblBorders>")
-    grid = "".join(f'<w:gridCol w:w="{each}"/>' for _ in range(columns))
+    grid = "".join(f'<w:gridCol w:w="{w}"/>' for w in widths)
     out = [f'<w:tbl><w:tblPr><w:tblW w:w="{width}" w:type="dxa"/>{borders}</w:tblPr>'
            f'<w:tblGrid>{grid}</w:tblGrid>']
     for index, row in enumerate(rows):
@@ -99,8 +112,8 @@ def table(rows: list[list[str]]) -> str:
             body = para(f"**{text}**" if index == 0 else text,
                         extra='<w:spacing w:before="20" w:after="20"/>')
             shade = '<w:shd w:val="clear" w:fill="F2F2F2"/>' if index == 0 else ""
-            cells.append(f'<w:tc><w:tcPr><w:tcW w:w="{each}" w:type="dxa"/>{shade}</w:tcPr>'
-                         f'{body}</w:tc>')
+            cells.append(f'<w:tc><w:tcPr><w:tcW w:w="{widths[column]}" w:type="dxa"/>{shade}'
+                         f'</w:tcPr>{body}</w:tc>')
         out.append(f"<w:tr>{''.join(cells)}</w:tr>")
     out.append("</w:tbl>")
     return "".join(out) + para()
