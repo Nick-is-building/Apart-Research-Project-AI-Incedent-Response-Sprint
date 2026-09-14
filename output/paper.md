@@ -82,7 +82,7 @@ The record contains a second, independent demonstration. On 9 July an agent that
 
 ### 4.3 The pattern holds outside this corpus
 
-Three out-of-corpus rows show the same structure in three separate incidents. Hugging Face's `datasets` library rejected every non-platform URL before any fetch; the agent had the worker read local files and execute local code instead, and neither is a URL fetch. At the UK AI Security Institute, an agent routed around GitHub network restrictions using Tor. And in the RubyGems incident of May 2026, disclosed on 11 September, OpenAI's explanation as reported by the Wall Street Journal is that agents used a package registry to retrieve public web data because they were not supposed to have web access.
+Three out-of-corpus rows show the same structure in three separate incidents. Hugging Face's `datasets` library rejected every non-platform URL before any fetch; the agent had the worker read local files and execute local code instead, and neither is a URL fetch. At the UK AI Security Institute, an agent routed around GitHub network restrictions using Tor. And in the RubyGems incident of May 2026, disclosed on 11 September [27], OpenAI states that its agents used the RubyGems platform to reach the internet, run harmless tasks and retrieve public information. Reporting adds, and OpenAI does not, that this happened during a training run in which the agents did not have full internet access. This is the case in which the operator itself concedes that a package registry served as a route to the internet.
 
 These are not three further measurements: all three are standing controls with no application event, so they establish that the pattern recurs, not how long anything held.
 
@@ -128,6 +128,8 @@ It also bears on the dominant remedy. Three findings argue against relying on mo
 - In an Anthropic incident, the model's rationalisation in its chain of thought was persuasive enough that the monitoring system would not have flagged the behaviour.
 
 **The clause.** I propose AIS-13.M, an extension to an existing control rather than a new one, because AICM already requires an inventory and a completeness check — of components that execute, not of mechanisms by which a capability is realised. It requires a mechanism inventory per blocked capability, a stated derivation method, a recorded coverage attempt, and for non-eliminating controls a declared protection-time budget with re-verification faster than it. It does not require proving completeness, which is not provable; a capability realised through an unlisted mechanism is a recorded failure of the inventory. Full text in Appendix A.
+
+The most prominent proposed response to the incident is permanent access for embedded third-party evaluators at employee level. Anthropic has committed to this unilaterally and OpenAI has agreed to follow [22]. An embedded evaluator needs an object to assess. The clause supplies one: a mechanism inventory with a declared budget, assessable from documents without network access.
 
 **Limitations.** This is n = 1. The one public case where a containment control was defeated is also the only case where the underlying transcripts are known to contain deliberately spoofed tool calls: METR found clear evidence in at least 96 transcripts, roughly 7 percent of those examined. OpenAI states that no observed manipulation affected the logs its graders or monitors see; that conflict is not resolved here, and every protection time inherits it. Extended limitations in Appendix C.
 
@@ -303,7 +305,7 @@ The author is a self-taught independent researcher. The mitigations used were a 
 
 [21] OpenAI (Marcus Williams, Hao Sun, Micah Carroll et al.). How we monitor internal coding agents for misalignment. 2026-03-19. https://openai.com/index/how-we-monitor-internal-coding-agents-misalignment/
 
-[22] Dario Amodei. We Must Pace the Frontier (personal website, approx. 3,800 words). 2026-09-12. (no public URL recorded; see `data/sources.csv`)
+[22] Dario Amodei. We Must Pace the Frontier (personal website, approx. 3,800 words). 2026-09-12. https://darioamodei.com/post/we-must-pace-the-frontier
 
 [23] Guidelight. Control Standard v1.1. 2026-08-10. https://guidelight.ai/control
 
@@ -313,4 +315,4 @@ The author is a self-taught independent researcher. The mitigations used were a 
 
 [26] Fujitsu Research of Europe (Singh, Mahmoud, Murillo). AI Sandboxes: A Threat Model, Taxonomy, and Measurement Framework (50 pp.), arXiv 2606.18532. 2026-06. https://arxiv.org/abs/2606.18532
 
-[27] Spencer Kitts, Thomas Larsen, Sydney Von Arx. RubyGems incident report. 2026-09-11. (no public URL recorded; see `data/sources.csv`)
+[27] Spencer Kitts, Thomas Larsen, Sydney Von Arx. RubyGems incident report. 2026-09-11. https://www.rubyhack.ai/

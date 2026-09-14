@@ -270,3 +270,35 @@ def test_repository_pointer_appears_once() -> None:
 
     text, _, _ = assemble_paper.build()
     assert text.count("reproduces every number in this paper") == 1
+
+
+# --- attribution and reference completeness ---------------------------------
+
+def test_paper_does_not_assert_the_unsourced_causal_clause() -> None:
+    """OpenAI's statement gives the route, not the reason."""
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert "because they were not supposed to have web access" not in text
+    assert "Reporting adds, and OpenAI does not" in text
+
+
+def test_amodei_and_rubygems_references_have_urls() -> None:
+    by_key = {r["key"]: r for r in read_csv("sources.csv")}
+    assert by_key["P24"]["url"] == "https://darioamodei.com/post/we-must-pace-the-frontier"
+    assert by_key["P25"]["url"] == "https://www.rubyhack.ai/"
+    for key in ("P24", "P25"):
+        assert "No URL recorded" not in by_key[key]["notes"], key
+
+
+def test_every_reference_is_cited_in_the_running_text() -> None:
+    """A reference nobody cites is an orphan; the list must stay load-bearing."""
+    import re
+
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    body = text[: text.index("## References")]
+    listed = {int(n) for n in re.findall(r"^\[(\d+)\]", text[text.index("## References"):], re.M)}
+    cited = {int(n) for n in re.findall(r"\[(\d+)\]", body)}
+    assert 22 in cited, "the Amodei reference must be cited in the running text"
+    assert 27 in cited, "the RubyGems reference must be cited in the running text"
+    assert cited <= listed, sorted(cited - listed)

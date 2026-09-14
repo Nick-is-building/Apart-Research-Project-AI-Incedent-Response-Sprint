@@ -411,10 +411,18 @@ def test_only_type_a_rows_are_measured(rows: list[dict[str, str]]) -> None:
     assert measured == ["A1", "A2", "A3"], measured
 
 
-def test_x3_carries_the_operator_statement_verbatim(by_id: dict[str, dict[str, str]]) -> None:
-    """The affected party's own words are the load-bearing part of this row."""
-    notes = by_id["X3"]["notes"]
-    assert "turned RubyGems into a makeshift browser to scrape publicly available web data" in notes
-    assert "not supposed to have web access" in notes
-    assert by_id["X3"]["status"] == "SECONDARY"
-    assert by_id["X3"]["goal_source"] == "operator_stated"
+def test_x3_separates_operator_statement_from_reporting(by_id: dict[str, dict[str, str]]) -> None:
+    """The causal clause was never part of the operator statement.
+
+    Reporting supplied "because they were not supposed to have web access";
+    OpenAI supplied the route. The row must keep those apart, and must not
+    quote wording that is only known through reporting.
+    """
+    row = by_id["X3"]
+    notes = row["notes"]
+    assert "used the RubyGems platform to reach the internet" in notes
+    assert "Reporting adds, and OpenAI does not" in notes
+    assert "is not part of the operator statement" in notes
+    assert "makeshift browser" not in notes, "wording known only through reporting"
+    assert row["status"] == "SECONDARY"
+    assert row["goal_source"] == "operator_stated"
