@@ -234,3 +234,39 @@ def test_submission_docx_is_built_from_the_template() -> None:
     assert "PROJECT TITLE" not in document, "template placeholder survived"
     assert "Delete all guidance text" not in document, "guidance info box survived"
     assert "Bypassed, Not Broken" in document
+
+
+# --- single authorship and the author details -------------------------------
+
+def test_paper_uses_first_person_singular() -> None:
+    """One author, so no editorial we. Quoted third-party 'we' is exempt."""
+    import re
+
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    offenders = re.findall(r"\b(?:[Ww]e|[Oo]ur)\b", text)
+    assert not offenders, offenders
+
+
+def test_author_details_are_current() -> None:
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    assert "wagnernick1997@gmail.com" in text
+    assert "partnernick1997" not in text
+    assert "Apart-Research-Project-AI-Incident-Response-Sprint" in text
+    assert "Nick-is-building/protection-time" not in text
+
+
+def test_results_subsections_are_consecutive() -> None:
+    """Merging 4.5 and 4.6 must not leave a hole in the numbering."""
+    import re
+
+    text = (REPO_ROOT / "paper-text.md").read_text(encoding="utf-8")
+    numbers = [m.group(1) for m in re.finditer(r"^### 4\.(\d) ", text, re.M)]
+    assert numbers == [str(n) for n in range(1, len(numbers) + 1)], numbers
+
+
+def test_repository_pointer_appears_once() -> None:
+    """The pointer belongs in Code and Data, not repeated in every appendix."""
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    assert text.count("reproduces every number in this paper") == 1

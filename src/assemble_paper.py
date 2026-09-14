@@ -41,8 +41,14 @@ def escape(text: str) -> str:
 
 
 def truncate(text: str, limit: int) -> str:
-    text = (text or "").strip()
-    return text if len(text) <= limit else text[: limit - 1].rstrip(" ,;") + "…"
+    """Shorten at a word boundary. Cutting mid-word reads as a rendering fault."""
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    clipped = text[:limit]
+    if " " in clipped:
+        clipped = clipped[: clipped.rindex(" ")]
+    return clipped.rstrip(" ,;:—-") + "…"
 
 
 def demote(markdown: str, levels: int = 2) -> str:
@@ -81,7 +87,13 @@ def appendix_a() -> str:
         "The audit is document-based and needs no network access: a mechanism visible in the "
         "operator's own architecture documentation but absent from the inventory is a finding. "
         "Normative text, guidelines, mapping and cost section are in "
-        "`docs/clause-ais-13-m.md`. " + POINTER,
+        "`docs/clause-ais-13-m.md`.",
+        "",
+        "The cost profile is a documentation and periodic-testing requirement rather than a "
+        "continuous compute overhead, and it applies before workloads start rather than during "
+        "them. Its recurring cost is the re-verification interval and its one-time cost is the "
+        "derivation of the inventory. No operator has published the cost of maintaining a "
+        "mechanism inventory, because none maintains one, so no figure is given here.",
     ])
 
 
@@ -93,16 +105,16 @@ def appendix_b() -> str:
     out = [
         f"{len(rows)} documented contradictions, {intra} of them inside a single document. "
         f"Both quoted claims per row, and the full resolving questions, are in "
-        f"`data/contradictions.csv`. " + POINTER,
+        f"`data/contradictions.csv`.",
         "",
-        "| | Contradiction | Intra-doc | Resolving question |",
+        "| Row | Contradiction | Intra-doc | Resolving question |",
         "|---|---|---|---|",
     ]
     for row in rows:
         out.append(
             f"| {row['id']} | {escape(row['short_title'])} "
             f"| {'yes' if row['intra_document'] == 'TRUE' else 'no'} "
-            f"| {escape(truncate(row['resolving_question'], 66))} |"
+            f"| {escape(truncate(row['resolving_question'], 88))} |"
         )
     return "\n".join(out)
 
@@ -126,6 +138,14 @@ LIMITATION_SENTENCES = [
      "term count and six by qualitative reading, so a headline should use eleven."),
     ("The awareness clock", "Those figures measure the interval to public disclosure, not to "
      "regulatory filing: a non-public report could have been timely on any reading."),
+    ("No counterfactual", "The rebuild supplies no comparison case without the control. How long "
+     "the capability would have taken to return had the control not been applied is not "
+     "determinable from the record, so the three values establish that the capability returned "
+     "after the control, not that the control delayed its return."),
+    ("Term-count vocabulary", "The systematic counts cover duration vocabulary — `duration`, "
+     "`how long`, `withstand`, `containment`, `egress`, `hours`, `minutes` — and not cadence "
+     "vocabulary such as `frequency`, `periodicity`, `interval` or `re-assessment`, which was "
+     "counted for individual instruments only."),
 ]
 
 
@@ -133,7 +153,7 @@ def appendix_c() -> str:
     out = [f"**{name}.** {sentence}" for name, sentence in LIMITATION_SENTENCES]
     out.append("")
     out.append("Extended version, including what would change the result, in "
-               "`docs/limitations.md`. " + POINTER)
+               "`docs/limitations.md`.")
     return "\n\n".join(out)
 
 
@@ -215,8 +235,8 @@ FIGURES = {
         "[t₀,A1] ⊂ [t₀,A2] ⊂ [t₀,A3]; dashed lines mark where the shorter ones end."
     ),
     "### 4.5 The declared cadence and the declared response budget are both exceeded by the measured values": (
-        "![Figure 4](figure_4_awareness_clock_bare.png)\n\n"
-        "**Figure 4.** The awareness clock: four readings of when OpenAI became aware, against "
+        "![Figure 2](figure_4_awareness_clock_bare.png)\n\n"
+        "**Figure 2.** The awareness clock: four readings of when OpenAI became aware, against "
         "the EU five-day and California fifteen-day thresholds. This measures the interval to "
         "public disclosure, a different quantity from the regulatory obligation. Three readings "
         "are primary, one secondary (hatched)."

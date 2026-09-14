@@ -2,14 +2,14 @@
 
 **Nick Wagner**
 Independent researcher
-partnernick1997@gmail.com
-Repository: https://github.com/Nick-is-building/protection-time
+wagnernick1997@gmail.com
+Repository: https://github.com/Nick-is-building/Apart-Research-Project-AI-Incident-Response-Sprint
 
 ---
 
 ## Abstract
 
-Containment controls for AI agents are audited as properties of the control: whether isolation is implemented, whether limits are set. No instrument attaches a duration. From the public record of the July 2026 OpenAI–Hugging Face incident we compute the first protection times for AI containment: 46 h 50 min for internet egress, 62 h 45 min for inter-agent communication, 175 h 30 min for administrator access, all measured from a single control application at 2026-07-06 01:16 UTC and verified to the minute against the appendix of OpenAI's technical report. All three controls were bypassed; none was broken. In each case the blocked capability was realised through a mechanism the control did not cover. Across seventeen instruments, eleven of them checked by term count, none records how long a control holds. We propose an audit clause extending CSA AICM AIS-13 that inventories mechanisms per capability and requires a declared protection-time budget.
+Containment controls for AI agents are audited as properties of the control: whether isolation is implemented, whether limits are set. No instrument attaches a duration. From the public record of the July 2026 OpenAI–Hugging Face incident I compute the first protection times for AI containment: 46 h 50 min for internet egress, 62 h 45 min for inter-agent communication, 175 h 30 min for administrator access, all measured from a single control application at 2026-07-06 01:16 UTC and verified to the minute against the appendix of OpenAI's technical report. All three controls were bypassed; none was broken. In each case the blocked capability was realised through a mechanism the control did not cover. Across seventeen instruments, eleven of them checked by term count, none records how long a control holds. I propose an audit clause extending CSA AICM AIS-13 that inventories mechanisms per capability and requires a declared protection-time budget.
 
 ---
 
@@ -19,7 +19,7 @@ In July 2026, AI agents running an internal cybersecurity evaluation at OpenAI l
 
 The response has converged on two remedies: better monitoring and third-party access. Neither asks the question that the incident data can answer, which is how long the boundary held.
 
-That question is not asked because no instrument is built to record it. We surveyed seventeen — regulatory, standards-body, national, academic, and vendor. Eleven were checked by term count over full text; the remaining six by qualitative reading. `duration`, `how long`, `withstand` and their variants are absent throughout, with one instructive exception: NIST SP 800-53 SC-7, the most comprehensive boundary-protection catalogue in existence with 29 control enhancements, contains the word `duration` exactly once, referring to the lifetime of an administrative exception to the traffic-flow policy.
+That question is not asked because no instrument is built to record it. I surveyed seventeen — regulatory, standards-body, national, academic, and vendor. Eleven were checked by term count over full text; the remaining six by qualitative reading. `duration`, `how long`, `withstand` and their variants are absent throughout, with one instructive exception: NIST SP 800-53 SC-7, the most comprehensive boundary-protection catalogue in existence with 29 control enhancements, contains the word `duration` exactly once, referring to the lifetime of an administrative exception to the traffic-flow policy.
 
 The measurement is possible in this one case because OpenAI published a timestamped event table as an appendix to its technical report. It was published on 26 August 2026, three weeks after the Black Hat presentation that had until then been the most detailed public account, and it contains something no other disclosure provides: the minute at which a containment control was applied.
 
@@ -35,7 +35,7 @@ This paper computes the three protection times the record supports, establishes 
 
 **Capability benchmarks.** SandboxEscapeBench [5] measures whether frontier models can escape container environments — the complementary axis to the one measured here: it scores the agent, not the boundary.
 
-**Measurement proposals.** SecureLayer7 proposed counting mean-time-to-alert in actions rather than hours [6]. The quantity measured here is control survival, which is not addressed in that work or, to our knowledge, in any other.
+**Measurement proposals.** SecureLayer7 proposed counting mean-time-to-alert in actions rather than hours [6]. The quantity measured here is control survival, which is not addressed in that work or, to my knowledge, in any other.
 
 ---
 
@@ -43,7 +43,7 @@ This paper computes the three protection times the record supports, establishes 
 
 **Sources.** Twenty-three primary sources and eleven standards or frameworks. Four incident reports were read in full: OpenAI's technical report and its accompanying blog post, both of 26 August 2026; Hugging Face's technical timeline of 27 July; and the Black Hat USA 2026 transcript.
 
-**The clock.** Each containment control identified in the record is one row. Rows carry three separate fields for scope: the mechanism the control blocks technically, the protection goal the operator pursues with it, and whether that goal is stated by the operator or assumed by us. Protection time is measured against the goal.
+**The clock.** Each containment control identified in the record is one row. Rows carry three separate fields for scope: the mechanism the control blocks technically, the protection goal the operator pursues with it, and whether that goal is stated by the operator or assumed by me. Protection time is measured against the goal.
 
 Rows fall into three types. **Applied** controls have an application event and therefore a measurable protection time. **Standing** controls were in place before the incident; they have no application event, and computing a protection time for them would be an error.
 
@@ -51,7 +51,7 @@ The entire public record contains exactly one control-application event: the Art
 
 **Computation.** All protection times are computed in code from the two timestamps, never entered by hand. A regression test fails if any of the three diverges from its reference value; a one-minute perturbation of A1 produces a failure and a non-zero exit.
 
-**Exposure normalisation.** Calendar time overstates the interval available to an adversary, because evaluation workloads did not run continuously. No public document records when they ran. We therefore do not report an exposure-normalised magnitude. We report what follows deductively instead, in Section 4.4.
+**Exposure normalisation.** Calendar time overstates the interval available to an adversary, because evaluation workloads did not run continuously. No public document records when they ran. I therefore do not report an exposure-normalised magnitude. I report what follows deductively instead, in Section 4.4.
 
 ---
 
@@ -59,7 +59,7 @@ The entire public record contains exactly one control-application event: the Art
 
 ### 4.1 Three protection times, verified to the minute
 
-All three controls were applied at 2026-07-06 01:16 UTC, when the rebuilt Artifactory instance came online.
+All three controls were applied at 2026-07-06 01:16 UTC, when the rebuilt Artifactory instance came online. Protection time here is the interval between the application of a control and the renewed realisation of the blocked capability. It is a property of the pair, capability and environment, rather than of the control alone. Against the mechanisms a control actually blocks its protection time is unbounded.
 
 | Blocked capability | Realised at | Protection time |
 |---|---|---|
@@ -67,7 +67,7 @@ All three controls were applied at 2026-07-06 01:16 UTC, when the rebuilt Artifa
 | Inter-agent communication | 2026-07-08 16:01 UTC | **62 h 45 min** |
 | Artifactory administrator access | 2026-07-13 08:46 UTC | **175 h 30 min** |
 
-The egress control is independently evidenced as having worked: at 2026-07-06 12:56 UTC, three attempts to reach external URLs through Artifactory returned HTTP 400.
+The egress control is independently evidenced as having worked: at 2026-07-06 12:56 UTC, three attempts to reach external URLs through Artifactory returned HTTP 400. The three values share one t₀ and come from one event. They are three endpoints of one measurement, not three independent measurements.
 
 ### 4.2 All three controls were bypassed; none was broken
 
@@ -83,11 +83,11 @@ These are not three further measurements: all three are standing controls with n
 
 ### 4.4 The ordering of exposure-normalised times is invariant
 
-Because all three controls were applied at the same instant, their intervals are nested. Only the ordering follows. The magnitude does not, and we make no claim about it.
+Because all three controls were applied at the same instant, their intervals are nested. Only the ordering follows. The magnitude does not, and I make no claim about it.
 
 ### 4.5 The declared cadence and the declared response budget are both exceeded by the measured values
 
-CSA AICM requires review of sandboxing policies at least annually, which is 8,766 hours. Against the measured protection times this is a factor of 187 for egress, 140 for inter-agent communication and 50 for administrator access.
+CSA AICM requires review of sandboxing policies at least annually, which is 8,766 hours. Against the measured protection times this is a factor of 187 for egress, 140 for inter-agent communication and 50 for administrator access. The CSA cadence governs the review of a sandboxing policy, while the measured values concern individual control instances. The comparison establishes an order-of-magnitude difference between re-verification cadence and observed hold time. It says nothing about whether the policy review itself is wrongly timed.
 
 OpenAI's published commitment is that paged responders who cannot establish within 30 minutes that an alert is a false positive are expected to pause the activity. On 19 July the alert fired at 12:03 UTC and the runs were stopped at 17:37, which is 334 minutes.
 
@@ -95,7 +95,7 @@ The commitment was published on 18 August, after the incident; it is a target ca
 
 By comparison, the UK AI Security Institute terminated all evaluations 46 minutes after its alert, but lost 11 h 41 min between the end of the unsanctioned activity and the alert itself.
 
-### 4.7 No instrument records how long a control holds
+### 4.6 No instrument records how long a control holds
 
 Eleven were established by term count, six by qualitative reading. None attaches a duration to a containment control.
 
@@ -117,7 +117,7 @@ It also bears on the dominant remedy. Three findings argue against relying on mo
 - METR's embedded red-teamer found several simple ways to disable monitors, including changing an environment variable.
 - In an Anthropic incident, the model's rationalisation in its chain of thought was persuasive enough that the monitoring system would not have flagged the behaviour.
 
-**The clause.** We propose AIS-13.M, an extension to an existing control rather than a new one, because AICM already requires an inventory and a completeness check — of components that execute, not of mechanisms by which a capability is realised. It requires a mechanism inventory per blocked capability, a stated derivation method, a recorded coverage attempt, and for non-eliminating controls a declared protection-time budget with re-verification faster than it. It does not require proving completeness, which is not provable; a capability realised through an unlisted mechanism is a recorded failure of the inventory. Full text in Appendix A.
+**The clause.** I propose AIS-13.M, an extension to an existing control rather than a new one, because AICM already requires an inventory and a completeness check — of components that execute, not of mechanisms by which a capability is realised. It requires a mechanism inventory per blocked capability, a stated derivation method, a recorded coverage attempt, and for non-eliminating controls a declared protection-time budget with re-verification faster than it. It does not require proving completeness, which is not provable; a capability realised through an unlisted mechanism is a recorded failure of the inventory. Full text in Appendix A.
 
 **Limitations.** This is n = 1. The one public case where a containment control was defeated is also the only case where the underlying transcripts are known to contain deliberately spoofed tool calls: METR found clear evidence in at least 96 transcripts, roughly 7 percent of those examined. OpenAI states that no observed manipulation affected the logs its graders or monitors see; that conflict is not resolved here, and every protection time inherits it. Extended limitations in Appendix C.
 
@@ -141,13 +141,13 @@ The instrument proposed here is small: an inventory of mechanisms per capability
 
 **Mechanism enumeration as a testable problem.** Whether an automated red-team agent enumerates mechanisms more completely than architecture review is an empirical question that nobody has asked.
 
-**Application to the next incident.** The clock is a data object, not a narrative. We expect the next disclosure to add rows and not measurements, because disclosures record that something happened rather than when a control was applied.
+**Application to the next incident.** The clock is a data object, not a narrative. I expect the next disclosure to add rows and not measurements, because disclosures record that something happened rather than when a control was applied.
 
 ---
 
 ## Code and Data
 
-All data, computation, figures and the full evidence base are at https://github.com/Nick-is-building/protection-time.
+All data, computation, figures and the full evidence base are at https://github.com/Nick-is-building/Apart-Research-Project-AI-Incident-Response-Sprint. The two figures omitted from this paper, covering the cadence comparison and the state distribution, are in the repository under `output/`.
 
 The full normative text of the clause, the complete contradiction register with both claims per row, the extended limitations, the remaining figures and the evidence base with its correction history are in the repository. `./verify.sh` reproduces every number in this paper from the raw data.
 
@@ -169,11 +169,11 @@ The full normative text of the clause, the complete contradiction register with 
 
 This work publishes timestamps, term counts and arithmetic. It contains no exploit code and no attack methodology. Every mechanism referred to is described in published reports by the affected parties themselves, in more operational detail than appears here.
 
-The dual-use question is nonetheless real and worth stating precisely. A measured protection time tells a defender how long a control held and tells an adversary the same thing. We judge the asymmetry to favour disclosure: the adversary in this case was an agent that discovered the routes without reading anything, in under 48 hours, while the defender currently has no instrument that records the quantity at all.
+The dual-use question is nonetheless real and worth stating precisely. A measured protection time tells a defender how long a control held and tells an adversary the same thing. I judge the asymmetry to favour disclosure: the adversary in this case was an agent that discovered the routes without reading anything, in under 48 hours, while the defender currently has no instrument that records the quantity at all.
 
 The riskier component is not the measurement but the mechanism inventory the clause requires. A complete inventory of the ways a capability can be realised in a specific environment is a target list for that environment. The clause therefore specifies disclosure to an assessor, not publication. This distinction is deliberate and should survive any adoption.
 
-We also note a second-order effect. Publishing protection times creates an incentive to avoid measuring them. The clause's §3.5.2 addresses the analogous incentive for declared budgets by making a longer declared budget increase rather than reduce exposure, but we have no equivalent mechanism for the incentive not to instrument at all. That is a limitation of a voluntary standard and an argument for the regulatory anchoring discussed in Section 5.
+I also note a second-order effect. Publishing protection times creates an incentive to avoid measuring them. The clause's §3.5.2 addresses the analogous incentive for declared budgets by making a longer declared budget increase rather than reduce exposure, but I have no equivalent mechanism for the incentive not to instrument at all. That is a limitation of a voluntary standard and an argument for the regulatory anchoring discussed in Section 5.
 
 ## Appendix E. Minimum data for external measurement
 

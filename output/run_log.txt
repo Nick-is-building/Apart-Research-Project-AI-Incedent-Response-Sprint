@@ -1,9 +1,9 @@
 protection-time verification run log
 ====================================
 
-timestamp (UTC)   2026-09-14T01:52:07Z
-git SHA           243492976a79982d9def3c648fc4f23ee5fbf4e5
-working tree      25 uncommitted file(s)
+timestamp (UTC)   2026-09-14T03:29:17Z
+git SHA           955e7028b8bbef9f2d5e7f34711edddf81c0f3a4
+working tree      28 uncommitted file(s)
 python            Python 3.11.15
 platform          Linux 6.18.44-fc-v24 x86_64
 mode              full
@@ -22,11 +22,11 @@ A3   175 h 30 min   175 h 30 min   PASS
 
 Other invariants
 ----------------
-test suite (95 passed)                               PASS
+test suite (99 passed)                               PASS
 no type-C row carries a P_wall                       PASS
 expected outputs present (16)                        PASS
 paper claims reproducing                             56/56
-submission PDF pages                                 11
+submission PDF pages                                 12
 instruments with a containment time axis             0 (expected 0)
 
 VERDICT  VERIFIED - all reference values reproduce and every check passed.
