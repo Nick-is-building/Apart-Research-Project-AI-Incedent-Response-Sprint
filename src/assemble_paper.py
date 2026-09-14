@@ -40,6 +40,11 @@ def escape(text: str) -> str:
     return (text or "").replace("|", "\\|").replace("\n", " ").strip()
 
 
+def truncate(text: str, limit: int) -> str:
+    text = (text or "").strip()
+    return text if len(text) <= limit else text[: limit - 1].rstrip(" ,;") + "…"
+
+
 def demote(markdown: str, levels: int = 2) -> str:
     """Push headings down so an inserted document nests under its appendix."""
     out = []
@@ -51,82 +56,44 @@ def demote(markdown: str, levels: int = 2) -> str:
     return "\n".join(out)
 
 
-# --- Appendix A: the clause, sections 2 to 7 --------------------------------
+POINTER = ("Full text in the repository; `./verify.sh` reproduces every number in this "
+           "paper from the raw data.")
 
-def clause_lead_sentences(prefix: str) -> list[tuple[str, str]]:
-    """Pull the bolded lead sentence of each numbered duty or audit step.
 
-    Selection, not paraphrase: every line returned already exists in
-    docs/clause-ais-13-m.md, verbatim.
-    """
-    text = (DOCS / "clause-ais-13-m.md").read_text(encoding="utf-8")
-    out: list[tuple[str, str]] = []
-    pattern = re.compile(
-        rf"^\*\*({re.escape(prefix)}\.\d+(?:\.\d+)?) ([^*]+?)\*\*(.*)$", re.M
-    )
-    for match in pattern.finditer(text):
-        number, title, tail = match.groups()
-        title = title.strip()
-        if not title.endswith("."):
-            title = (title + " " + tail.split(".")[0]).strip() + "."
-        out.append((number, title))
-    return out
-
+# --- Appendix A: the clause, at specification length ------------------------
 
 def appendix_a() -> str:
-    _, specification = None, None
     text = (DOCS / "clause-ais-13-m.md").read_text(encoding="utf-8")
-    spec_block = text[text.index("### Control Specification"):text.index("**Elimination, defined.**")]
+    block = text[text.index("### Control Specification"):text.index("**Elimination, defined.**")]
     specification = " ".join(
-        line.lstrip("> ").strip() for line in spec_block.splitlines()
+        line.lstrip("> ").strip() for line in block.splitlines()
         if line.strip().startswith(">")
     ).strip()
 
-    out = [
-        "*Condensed. Full normative text, including the AICM control row, the mapping table and "
-        "the cost section, is in `docs/clause-ais-13-m.md`; the control row is also Table 5 of "
-        "`output/paper_tables.md`.*",
-        "",
-        "**AIS-13.M — Capability Mechanism Inventory and Protection-Time Budget.** Proposed "
-        "extension to CSA AI Controls Matrix v1.1.1, domain Application & Interface Security.",
-        "",
-        "**Control Specification**",
+    return "\n".join([
+        "**AIS-13.M — Capability Mechanism Inventory and Protection-Time Budget** extends CSA "
+        "AI Controls Matrix v1.1.1 AIS-13, which already requires an inventory and a "
+        "completeness check — of components that execute, not of mechanisms by which a "
+        "capability is realised.",
         "",
         "> " + specification,
         "",
-        "**Implementation — operator of the execution environment**",
-        "",
-    ]
-    out += [f"- **{n}** {t}" for n, t in clause_lead_sentences("3")]
-    out += [
-        "",
-        "**Audit — assessable from documents alone, without network access**",
-        "",
-    ]
-    out += [f"- **{n}** {t}" for n, t in clause_lead_sentences("4")]
-    out += [
-        "",
-        "Elimination is defined narrowly: a control eliminates a capability only where the "
-        "interface or execution substrate required to produce the outcome is structurally absent "
-        "from the execution environment. Restricting, filtering or removing a particular means of "
-        "invocation is not elimination; it removes one mechanism from the inventory. A capability "
-        "resident in model weights cannot be eliminated by any control applied to the environment.",
-    ]
-    return "\n".join(out)
+        "The audit is document-based and needs no network access: a mechanism visible in the "
+        "operator's own architecture documentation but absent from the inventory is a finding. "
+        "Normative text, guidelines, mapping and cost section are in "
+        "`docs/clause-ais-13-m.md`. " + POINTER,
+    ])
 
 
-# --- Appendix B: the contradiction register ---------------------------------
+# --- Appendix B: contradictions, table only ---------------------------------
 
 def appendix_b() -> str:
     rows = read_csv("contradictions.csv")
     intra = sum(1 for r in rows if r["intra_document"] == "TRUE")
-    main = [r["id"] for r in rows if r["in_paper_main_text"] == "TRUE"]
-
     out = [
-        f"*Generated from `data/contradictions.csv`. {len(rows)} documented contradictions, "
-        f"{intra} of them intra-document — inside a single document. "
-        f"{', '.join(main)} are discussed in the main text. The quoted claims on both sides of "
-        f"each row are in the data file.*",
+        f"{len(rows)} documented contradictions, {intra} of them inside a single document. "
+        f"Both quoted claims per row, and the full resolving questions, are in "
+        f"`data/contradictions.csv`. " + POINTER,
         "",
         "| | Contradiction | Intra-doc | Resolving question |",
         "|---|---|---|---|",
@@ -135,206 +102,71 @@ def appendix_b() -> str:
         out.append(
             f"| {row['id']} | {escape(row['short_title'])} "
             f"| {'yes' if row['intra_document'] == 'TRUE' else 'no'} "
-            f"| {escape(row['resolving_question'])} |"
+            f"| {escape(truncate(row['resolving_question'], 66))} |"
         )
     return "\n".join(out)
 
 
-# --- Appendix C: extended limitations ---------------------------------------
+# --- Appendix C: one sentence per limitation --------------------------------
 
-def limitation_paragraphs() -> list[tuple[str, str]]:
-    """Heading plus the first substantive paragraph of each limitation.
-
-    Selection, not paraphrase: each paragraph is taken whole from
-    docs/limitations.md.
-    """
-    text = (DOCS / "limitations.md").read_text(encoding="utf-8")
-    sections = re.split(r"^## ", text, flags=re.M)[1:]
-    out: list[tuple[str, str]] = []
-    for section in sections:
-        heading, _, body = section.partition("\n")
-        heading = heading.strip()
-        if not re.match(r"^\d+\.", heading):
-            continue
-        for block in body.split("\n\n"):
-            block = " ".join(block.split()).strip()
-            if len(block) > 80 and not block.startswith(("**Check it:**", "|", "-", "    ")):
-                out.append((heading, block))
-                break
-    return out
+LIMITATION_SENTENCES = [
+    ("`P_exp` magnitude", "No public document records when evaluation workloads ran, so no "
+     "exposure-normalised magnitude is reported and only the ordering of the three follows."),
+    ("One incident", "The comparison cases are a contrast class, not an out-of-sample test: "
+     "internet access was open there by misconfiguration or design, so protection time is "
+     "undefined, not zero."),
+    ("Transcript integrity", "METR found spoofed tool calls in at least 96 transcripts against "
+     "OpenAI's statement that none affected the logs its graders see — unresolved here, and "
+     "every protection time inherits it."),
+    ("Standing rows", "Sixteen of the twenty-two rows are pre-existing controls with no "
+     "application event, so they carry no protection time and are measured binarily."),
+    ("One undeterminable state", "For the host-mount restriction the report records only that "
+     "one pod failed and a second succeeded, so `broken` is as much a claim as `bypassed`."),
+    ("Uneven instrument evidence", "Eleven of the seventeen instruments were established by "
+     "term count and six by qualitative reading, so a headline should use eleven."),
+    ("The awareness clock", "Those figures measure the interval to public disclosure, not to "
+     "regulatory filing: a non-public report could have been timely on any reading."),
+]
 
 
 def appendix_c() -> str:
-    paragraphs = limitation_paragraphs()
-    out = [
-        f"*Condensed from `docs/limitations.md`, which carries all {len(paragraphs)} in full "
-        "along with a section on what would change the result. One paragraph each, taken "
-        "whole.*",
-        "",
-    ]
-    for heading, paragraph in paragraphs:
-        out += [f"**{heading}**", "", paragraph, ""]
-    out += [
-        "If you are looking for a single sentence to attack, use this one: this is n = 1, and "
-        "the one public case where a containment control was actually defeated is also the only "
-        "case where the underlying transcripts are known to contain deliberately spoofed tool "
-        "calls.",
-    ]
-    return "\n".join(out)
+    out = [f"**{name}.** {sentence}" for name, sentence in LIMITATION_SENTENCES]
+    out.append("")
+    out.append("Extended version, including what would change the result, in "
+               "`docs/limitations.md`. " + POINTER)
+    return "\n\n".join(out)
 
 
-# --- Appendix E: what did not work ------------------------------------------
+# --- Appendix E: minimum data for external measurement ----------------------
 
-# Drawn from evidence base section 19. Only the errors that changed a number or
-# a conclusion; the full nineteen are in docs/belegbasis-v3.md section 19.
-CORRECTIONS = [
-    (
-        "The rebuild date, which would have moved all three values by two days",
-        "OpenAI's blog post of 26 August dates the Artifactory rebuild to 8 July. Its own "
-        "technical report dates it to 2026-07-06 01:16 UTC, and three further sources agree. "
-        "Taking the blog post's date would have shortened every protection time in this paper "
-        "by 48 hours.",
-        "Where two artefacts from the same organisation on the same day disagree, the one with "
-        "the timestamped appendix wins, and the disagreement is recorded rather than silently "
-        "resolved.",
-    ),
-    (
-        "A false absence claim caused by date formatting",
-        "We asserted that 20 April does not appear in the technical report. It does, as the "
-        "first row of the event table. The search had been run for \"April\" against a document "
-        "that uses ISO dates.",
-        "A negative finding is only as good as the search terms. Every \"does not appear\" claim "
-        "was re-run across spellings and formats.",
-    ),
-    (
-        "Two register lines recommended for deletion that were genuine",
-        "We twice proposed dropping a contradiction as resolvable. Both are real and both remain "
-        "in the register.",
-        "The error direction was constant across the project: over-confident resolution, never "
-        "invention. That asymmetry is itself a finding about how this material fails.",
-    ),
-    (
-        "Two rows reclassified from applied to standing, removing a row type",
-        "The outbound network controls and the Artifactory image-cache integrity handling were "
-        "first recorded as controls applied on 9 July. That was wrong: 9 July is when the event "
-        "occurred, not when the control was applied, and both were already standing.",
-        "This produced the finding in Section 3: the entire public record contains exactly one "
-        "control-application event. The correction did not weaken the result, it produced it.",
-    ),
+MINIMUM_FIELDS = [
+    ("Control identifier", "supplied"),
+    ("Capability blocked, stated as an outcome", "partly — assumed for some rows, flagged"),
+    ("Application timestamp, to the minute", "supplied, for one event only"),
+    ("Evidence the control was active", "partly — egress only, three HTTP 400 responses"),
+    ("Realisation timestamp, to the minute", "supplied, for all three measured rows"),
+    ("Mechanism used", "partly — not named for egress"),
+    ("Workload activity intervals over the window", "**not supplied**"),
 ]
 
 
 def appendix_e() -> str:
     out = [
-        "*Selected from the correction history in the evidence base, section 19, which records "
-        "nineteen errors from the research process with their methodological causes. The four "
-        "below are those that changed a number or a conclusion. The full list is in the "
-        "repository and is deliberately not summarised into something flattering.*",
+        "The fields an external party needs to compute a protection time, and whether the "
+        "OpenAI record supplies them.",
         "",
+        "| Field | In the record |",
+        "|---|---|",
     ]
-    for index, (title, what, lesson) in enumerate(CORRECTIONS, start=1):
-        out += [f"**E.{index} {title}**", "", what, "", f"*What this changed:* {lesson}", ""]
-    return "\n".join(out).rstrip()
-
-
-# --- Appendix F: minimum data for external measurement ----------------------
-
-MINIMUM_FIELDS = [
-    ("Control identifier",
-     "A stable name for the control, so successive applications can be told apart",
-     "yes", "Named in the narrative and in the event table"),
-    ("Capability blocked, stated as an outcome",
-     "What the control is credited with preventing, expressed as a result rather than as a "
-     "request type",
-     "partly", "Stated for some controls; for others it had to be assumed and is flagged "
-               "as a project assumption in `data/clock.csv`"),
-    ("Application timestamp, to the minute",
-     "When the control took effect. Without it there is no interval and no protection time",
-     "yes", "2026-07-06 01:16 UTC, for one event only"),
-    ("Evidence the control was active",
-     "A positive observation that the control was doing something after application",
-     "partly", "Present for egress only: three HTTP 400 responses at 12:56 UTC"),
-    ("Realisation timestamp, to the minute",
-     "When the blocked capability was first achieved by any mechanism",
-     "yes", "For all three measured rows"),
-    ("Mechanism used",
-     "Which route realised the capability, so it can be checked against an inventory",
-     "partly", "Named for inter-agent communication and administrator access; not named for "
-               "egress, which is why that row's `alternative_mechanism` is left empty"),
-    ("Workload activity intervals over the measurement window",
-     "When evaluation workloads actually ran, so calendar time can be normalised to exposure",
-     "no", "**Absent entirely.** No public document records when workloads ran or paused "
-           "between 6 and 7 July"),
-]
-
-
-def appendix_f() -> str:
-    supplied = {"yes": "supplied", "partly": "partly supplied", "no": "**not supplied**"}
-    out = [
-        "*Generated. The fields an external party needs to compute a protection time, and "
-        "whether the OpenAI record supplies them.*",
-        "",
-        "| Field | Why it is required | In the record | Detail |",
-        "|---|---|---|---|",
-    ]
-    for name, why, status, detail in MINIMUM_FIELDS:
-        out.append(f"| {name} | {why} | {supplied[status]} | {detail} |")
+    out += [f"| {name} | {status} |" for name, status in MINIMUM_FIELDS]
     out += [
         "",
         "Six of the seven are present for at least some rows, which is why three protection "
-        "times can be computed at all. The seventh is absent, and that absence is the reason "
-        "no exposure-normalised magnitude is reported anywhere in this paper: only the "
-        "ordering of the exposure-normalised times follows, and it follows deductively from "
-        "the nesting rather than from data. A harness that emitted these seven fields would "
+        "times can be computed at all. The seventh is absent, and that is why no "
+        "exposure-normalised magnitude is reported. A harness emitting these seven fields would "
         "make the quantity measurable by default rather than recoverable by archaeology.",
     ]
     return "\n".join(out)
-
-
-# --- Appendix G: the nesting argument ---------------------------------------
-
-def appendix_g() -> str:
-    report = (REPO_ROOT / "output" / "sensitivity_report.txt").read_text(encoding="utf-8")
-    draws = re.search(r"draws:\s+([\d,]+)", report)
-    families = re.search(r"duty-cycle families:\s+(\d+)", report)
-    held = re.search(r"held in: ([\d.]+%) of draws", report)
-    threshold = re.search(r"=\s+([\d.]+) \* alpha", report)
-
-    return "\n".join([
-        "*Generated from `src/sensitivity.py`; the full run is "
-        "`output/sensitivity_report.txt`.*",
-        "",
-        "If exposure-normalised protection time is the integral of agent execution activity "
-        "over each interval, and that activity is nowhere negative, the ordering is preserved "
-        "for every possible duty-cycle function, not only for constant ones. The integral of a "
-        "non-negative function over a set cannot exceed its integral over a superset, so the "
-        "result needs no data about when workloads ran.",
-        "",
-        f"A Monte Carlo demonstration over {draws.group(1)} draws across "
-        f"{families.group(1)} deliberately ill-behaved non-negative duty-cycle families — "
-        "including one that crams all activity into the tail, after the two shorter intervals "
-        f"have ended — reproduces the ordering in {held.group(1)} of draws. That is an "
-        "illustration of a deductive result, not evidence for it.",
-        "",
-        "Three limitations travel with it. Only the ordering is settled; the magnitude does "
-        "not follow and is not claimed. The result holds for exactly the three rows sharing "
-        "the 6 July rebuild. And the nesting breaks for any row with a different application "
-        f"time: a per-control model would wrongly permit a rank reversal below "
-        f"{threshold.group(1)} times the egress coefficient, a region nesting makes empty.",
-    ])
-
-
-# --- Appendix H: supporting figures -----------------------------------------
-
-def appendix_h() -> str:
-    return "\n\n".join([
-        "![Figure 2](figure_2_cadence.png)",
-        "**Figure 2.** Prescribed review cadence against measured hold time, log axis. "
-        "Source: `output/figure_2_cadence.pdf`.",
-        "![Figure 3](figure_3_states.png)",
-        "**Figure 3.** Control state by row type across the 22-row clock. Type B is defined in "
-        "the schema and empty in the corpus. Source: `output/figure_3_states.pdf`.",
-    ])
 
 
 # --- References -------------------------------------------------------------
@@ -354,8 +186,7 @@ def references() -> str:
         raise ValueError(f"reference codes absent from sources.csv: {missing}")
 
     out = [
-        "*Entries [7] onward generated from `data/sources.csv`; the bracketed code after each "
-        "is its identifier in that register.*",
+        "*Entries [7] onward generated from `data/sources.csv`.*",
         "",
     ]
     for index, code in enumerate(REFERENCE_CODES, start=7):
@@ -369,7 +200,6 @@ def references() -> str:
             parts.append(row["url"])
         else:
             parts.append("(no public URL recorded; see `data/sources.csv`)")
-        parts.append(f"[{code}]")
         out.append(" ".join(parts))
         out.append("")
     return "\n".join(out).rstrip()
@@ -379,19 +209,17 @@ def references() -> str:
 
 FIGURES = {
     "### 4.1 Three protection times, verified to the minute": (
-        "![Figure 1](figure_1_timeline.png)\n\n"
+        "![Figure 1](figure_1_timeline_bare.png)\n\n"
         "**Figure 1.** Protection time of the three controls applied at the Artifactory "
-        "rebuild. All three intervals share one start point, so they are nested: "
-        "[t₀,A1] ⊂ [t₀,A2] ⊂ [t₀,A3]. The dashed drop lines mark where the shorter intervals "
-        "end inside the longer ones. Source: `output/figure_1_timeline.pdf`."
+        "rebuild. The intervals share one start point, so they are nested: "
+        "[t₀,A1] ⊂ [t₀,A2] ⊂ [t₀,A3]; dashed lines mark where the shorter ones end."
     ),
     "### 4.5 The declared cadence and the declared response budget are both exceeded by the measured values": (
-        "![Figure 4](figure_4_awareness_clock.png)\n\n"
+        "![Figure 4](figure_4_awareness_clock_bare.png)\n\n"
         "**Figure 4.** The awareness clock: four readings of when OpenAI became aware, against "
-        "the EU five-day and California fifteen-day thresholds. Measures the interval to public "
-        "disclosure, which is a different quantity from the regulatory obligation. Three "
-        "readings are primary, one secondary (hatched). Source: "
-        "`output/figure_4_awareness_clock.pdf`."
+        "the EU five-day and California fifteen-day thresholds. This measures the interval to "
+        "public disclosure, a different quantity from the regulatory obligation. Three readings "
+        "are primary, one secondary (hatched)."
     ),
 }
 # Figures 2 and 3 live in Appendix H, placed by appendix_h() rather than here.
@@ -424,10 +252,7 @@ GENERATORS = [
     ("Appendix A", "clause-ais-13-m.md", appendix_a),
     ("Appendix B", "contradictions.csv", appendix_b),
     ("Appendix C", "limitations.md", appendix_c),
-    ("Appendix E", "belegbasis-v3.md section 19", appendix_e),
-    ("Appendix F", "generated table", appendix_f),
-    ("Appendix G", "sensitivity_report.txt", appendix_g),
-    ("Appendix H", "figures 2 and 3", appendix_h),
+    ("Appendix E", "generated table", appendix_e),
     ("References", "sources.csv", references),
 ]
 

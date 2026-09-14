@@ -204,7 +204,7 @@ def test_every_generation_marker_is_filled() -> None:
     import assemble_paper
 
     text, filled, placed = assemble_paper.build()
-    assert len(filled) == 8, filled
+    assert len(filled) == 5, filled
     assert not assemble_paper.MARKER.search(text)
 
 
@@ -222,8 +222,10 @@ def test_abstract_is_exactly_150_words() -> None:
     assert body in source, "the abstract was altered during assembly"
 
 
-def test_two_figures_in_the_main_text_and_two_in_the_appendix() -> None:
-    """Figure 1 with 4.1 and Figure 4 with the merged 4.5; 2 and 3 in Appendix H."""
+def test_exactly_two_figures_and_at_most_five_tables() -> None:
+    """The submission budget: two figures in the paper, the rest in the repository."""
+    import re
+
     import assemble_paper
 
     text, _, placed = assemble_paper.build()
@@ -231,19 +233,26 @@ def test_two_figures_in_the_main_text_and_two_in_the_appendix() -> None:
     assert "### 4.1 Three protection times, verified to the minute" in placed
     assert any(s.startswith("### 4.5") for s in placed)
 
-    for figure, section in (("**Figure 1.**", "### 4.1"), ("**Figure 4.**", "### 4.5")):
-        heading = text.rindex(section, 0, text.index(figure))
-        between = text[heading:text.index(figure)]
-        assert "\n### " not in between[len(section):], f"{figure} drifted out of {section}"
+    captions = re.findall(r"\*\*Figure (\d)\.\*\*", text)
+    assert captions == ["1", "4"], captions
+    assert text.count("\n|---") <= 5, "at most five tables"
 
-    appendix_h = text.index("## Appendix H.")
-    for figure in ("**Figure 2.**", "**Figure 3.**"):
-        assert text.index(figure) > appendix_h, f"{figure} is not in Appendix H"
-
-    # all four still ship as files
-    for stem in ("figure_1_timeline", "figure_2_cadence", "figure_3_states",
-                 "figure_4_awareness_clock"):
+    # Figures 2 and 3 stay in the repository, not the paper.
+    for stem in ("figure_2_cadence", "figure_3_states"):
+        assert f"{stem}.png)" not in text
         assert (REPO_ROOT / "output" / f"{stem}.png").exists()
+
+
+def test_no_dangling_appendix_cross_references() -> None:
+    """Removing an appendix must not leave the text pointing at it."""
+    import re
+
+    import assemble_paper
+
+    text, _, _ = assemble_paper.build()
+    referenced = set(re.findall(r"Appendix ([A-H])", text))
+    present = set(re.findall(r"^## Appendix ([A-H])\.", text, re.M))
+    assert referenced <= present, f"dangling: {sorted(referenced - present)}"
 
 
 def test_paper_prose_is_copied_through_unchanged() -> None:
