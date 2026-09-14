@@ -125,8 +125,9 @@ def finish(
     """
     lines = [] if BARE else (textwrap.wrap(caption_text, wrap_chars) or [""])
     caption_height = 0.030 * len(lines)
-    legend_height = 0.075 if legend_handles else 0.0
-    bottom = 0.16 + caption_height + legend_height
+    # The legend needs its own band clear of the axis label, or the two collide.
+    legend_height = 0.115 if legend_handles else 0.0
+    bottom = 0.19 + caption_height + legend_height
 
     fig.subplots_adjust(bottom=bottom)
 
@@ -134,7 +135,7 @@ def finish(
         fig.legend(
             handles=legend_handles,
             loc="lower center",
-            bbox_to_anchor=(0.5, caption_height + 0.035),
+            bbox_to_anchor=(0.5, caption_height + 0.015),
             ncol=legend_columns,
             handlelength=1.3,
             columnspacing=1.6,
@@ -321,7 +322,7 @@ def figure_4() -> list[Path]:
     disclosure = budgets.DISCLOSURE
     ordered = list(reversed(readings))
 
-    fig, ax = plt.subplots(figsize=(7.6, 3.1))
+    fig, ax = plt.subplots(figsize=(7.6, 3.5))
 
     for index, reading in enumerate(ordered):
         low, high = reading.days_to(disclosure)

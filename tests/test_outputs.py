@@ -233,8 +233,10 @@ def test_exactly_two_figures_and_at_most_five_tables() -> None:
     assert "### 4.1 Three protection times, verified to the minute" in placed
     assert any(s.startswith("### 4.5") for s in placed)
 
+    # The paper carries two figures, numbered consecutively. The omitted ones
+    # keep their repository numbering; the paper must not inherit the gap.
     captions = re.findall(r"\*\*Figure (\d)\.\*\*", text)
-    assert captions == ["1", "4"], captions
+    assert captions == ["1", "2"], captions
     assert text.count("\n|---") <= 5, "at most five tables"
 
     # Figures 2 and 3 stay in the repository, not the paper.

@@ -40,6 +40,9 @@ def esc(text: str) -> str:
     return (text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
 
+CODE_FONT = '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>'
+
+
 def runs(text: str) -> str:
     """Inline markdown -> WordprocessingML runs. Bold, italic, code."""
     out: list[str] = []
@@ -53,7 +56,22 @@ def runs(text: str) -> str:
         elif part.startswith("*") and part.endswith("*"):
             part, props = part[1:-1], "<w:i/>"
         elif part.startswith("`") and part.endswith("`"):
-            part, props = part[1:-1], '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>'
+            part, props = part[1:-1], CODE_FONT
+
+        # Code spans nest inside bold and italic; without this pass the
+        # backticks of `P_exp` print literally in a bold heading.
+        if props and props != CODE_FONT and "`" in part:
+            for inner in re.split(r"(`[^`]+?`)", part):
+                if not inner:
+                    continue
+                if inner.startswith("`") and inner.endswith("`"):
+                    inner, inner_props = inner[1:-1], props + CODE_FONT
+                else:
+                    inner_props = props
+                out.append(f'<w:r><w:rPr>{inner_props}</w:rPr>'
+                           f'<w:t xml:space="preserve">{esc(inner)}</w:t></w:r>')
+            continue
+
         rpr = f"<w:rPr>{props}</w:rPr>" if props else ""
         out.append(f'<w:r>{rpr}<w:t xml:space="preserve">{esc(part)}</w:t></w:r>')
     return "".join(out)
@@ -79,16 +97,36 @@ def quote(text: str) -> str:
     return f'<w:p><w:pPr>{extra}</w:pPr>{runs("*" + text + "*")}</w:p>'
 
 
-def column_weights(rows: list[list[str]], columns: int) -> list[float]:
-    """Share the table width by how much text each column actually carries.
+# Arial 11pt: roughly 120 DXA per character, a little more for the bold header,
+# plus cell padding. Used as a floor so no column wraps a word it must show whole.
+DXA_PER_CHAR = 125
+DXA_HEADER_PER_CHAR = 140
+CELL_PADDING_DXA = 260
 
-    Equal columns waste most of a page when one column holds a sentence and
-    another holds "yes". Weights are clamped so no column collapses.
+
+def longest_word(cells: list[str]) -> int:
+    return max((len(w) for cell in cells for w in cell.split()), default=1)
+
+
+def column_widths(rows: list[list[str]], columns: int, width: int) -> list[int]:
+    """Size columns by content, with a floor that fits each column's widest word.
+
+    Sharing the width purely in proportion to cell length starves a narrow
+    column until it wraps its own header: "Row" becomes "Ro / w" and
+    "Intra-doc" becomes "Intr / a- / doc". The floor below prevents that, and
+    what remains after the floors is shared out in proportion to content.
     """
-    longest = [max((len(r[c]) for r in rows if c < len(r)), default=1) for c in range(columns)]
-    clamped = [max(4.0, min(float(v), 90.0)) for v in longest]
-    total = sum(clamped)
-    return [v / total for v in clamped]
+    cells = [[r[c] if c < len(r) else "" for r in rows] for c in range(columns)]
+    floors = [
+        longest_word(col) * (DXA_HEADER_PER_CHAR if i == 0 else DXA_PER_CHAR) + CELL_PADDING_DXA
+        for i, col in enumerate(cells)
+    ]
+    # A column whose floor comes from its header alone should not also claim a
+    # share of the surplus, so weight the surplus by total content length.
+    content = [max(1, sum(len(x) for x in col)) for col in cells]
+    surplus = max(0, width - sum(floors))
+    total = sum(content)
+    return [floors[i] + int(surplus * content[i] / total) for i in range(columns)]
 
 
 def table(rows: list[list[str]]) -> str:
@@ -96,8 +134,7 @@ def table(rows: list[list[str]]) -> str:
         return ""
     columns = max(len(r) for r in rows)
     width = 9360  # 6.5in in DXA
-    weights = column_weights(rows, columns)
-    widths = [max(500, int(width * w)) for w in weights]
+    widths = column_widths(rows, columns, width)
     borders = ("<w:tblBorders>"
                + "".join(f'<w:{e} w:val="single" w:sz="4" w:color="BFBFBF"/>'
                          for e in ("top", "left", "bottom", "right", "insideH", "insideV"))
@@ -106,6 +143,9 @@ def table(rows: list[list[str]]) -> str:
     out = [f'<w:tbl><w:tblPr><w:tblW w:w="{width}" w:type="dxa"/>{borders}</w:tblPr>'
            f'<w:tblGrid>{grid}</w:tblGrid>']
     for index, row in enumerate(rows):
+        # Repeat the header on a continuation page and never split a row.
+        row_props = ('<w:trPr><w:tblHeader/><w:cantSplit/></w:trPr>' if index == 0
+                     else '<w:trPr><w:cantSplit/></w:trPr>')
         cells = []
         for column in range(columns):
             text = row[column] if column < len(row) else ""
@@ -114,14 +154,14 @@ def table(rows: list[list[str]]) -> str:
             shade = '<w:shd w:val="clear" w:fill="F2F2F2"/>' if index == 0 else ""
             cells.append(f'<w:tc><w:tcPr><w:tcW w:w="{widths[column]}" w:type="dxa"/>{shade}'
                          f'</w:tcPr>{body}</w:tc>')
-        out.append(f"<w:tr>{''.join(cells)}</w:tr>")
+        out.append(f"<w:tr>{row_props}{''.join(cells)}</w:tr>")
     out.append("</w:tbl>")
     return "".join(out) + para()
 
 
 def image(rel_id: str, width_emu: int, height_emu: int, name: str) -> str:
     return (
-        f'<w:p><w:pPr><w:spacing w:before="120" w:after="60"/><w:jc w:val="center"/></w:pPr>'
+        f'<w:p><w:pPr><w:keepNext/><w:spacing w:before="120" w:after="60"/><w:jc w:val="center"/></w:pPr>'
         f'<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" '
         f'xmlns:wp="{WP}">'
         f'<wp:extent cx="{width_emu}" cy="{height_emu}"/>'
@@ -220,6 +260,47 @@ class Converter:
         return "".join(self.body)
 
 
+FOOTER_XML = (
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    f'<w:ftr xmlns:w="{W}" xmlns:r="{R}">'
+    '<w:p><w:pPr><w:jc w:val="center"/></w:pPr>'
+    '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'
+    '<w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r>'
+    '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+    '<w:r><w:t>1</w:t></w:r>'
+    '<w:r><w:fldChar w:fldCharType="end"/></w:r>'
+    '</w:p></w:ftr>'
+)
+
+
+def add_page_numbers(work: Path, sect_xml: str) -> str:
+    """Write a centred PAGE-field footer and reference it from the section."""
+    (work / "word" / "footer9.xml").write_text(FOOTER_XML, encoding="utf-8")
+
+    rels_path = work / "word" / "_rels" / "document.xml.rels"
+    rels = rels_path.read_text(encoding="utf-8")
+    rel_id = "rIdFooter9"
+    if rel_id not in rels:
+        rels_path.write_text(rels.replace(
+            "</Relationships>",
+            f'<Relationship Id="{rel_id}" Type="http://schemas.openxmlformats.org/'
+            f'officeDocument/2006/relationships/footer" Target="footer9.xml"/></Relationships>'),
+            encoding="utf-8")
+
+    types_path = work / "[Content_Types].xml"
+    types = types_path.read_text(encoding="utf-8")
+    if "footer9.xml" not in types:
+        types_path.write_text(types.replace(
+            "</Types>",
+            '<Override PartName="/word/footer9.xml" ContentType="application/vnd.openxmlformats-'
+            'officedocument.wordprocessingml.footer+xml"/></Types>'), encoding="utf-8")
+
+    # footerReference must precede pgSz: the sectPr child order is schema-enforced.
+    assert "<w:pgSz" in sect_xml, "section properties carry no page size"
+    return sect_xml.replace(
+        "<w:pgSz", f'<w:footerReference w:type="default" r:id="{rel_id}"/><w:pgSz', 1)
+
+
 def build(template: Path = TEMPLATE, paper: Path = PAPER_MD,
           out: Path = OUTPUT_DOCX) -> Path:
     if not template.exists():
@@ -248,6 +329,7 @@ def build(template: Path = TEMPLATE, paper: Path = PAPER_MD,
     converter = Converter()
     content = converter.convert(paper.read_text(encoding="utf-8"))
 
+    sect_xml = add_page_numbers(work, sect_xml)
     header = document.read_text(encoding="utf-8").split("<w:body>")[0]
     document.write_text(f"{header}<w:body>{content}{sect_xml}</w:body></w:document>",
                         encoding="utf-8")
